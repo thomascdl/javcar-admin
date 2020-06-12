@@ -2,18 +2,16 @@ import request from '@/utils/request'
 
 export function uploadsImg(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/simg/',
+    url: '/back/simg/',
     method: 'post',
-    headers: { 'content-type': 'multipart/form-data' },
+    headers: {'content-type': 'multipart/form-data'},
     data
   })
 }
 
 export function getsImg(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/simg/',
+    url: '/back/simg/',
     method: 'get',
     params: data
   })
@@ -21,8 +19,7 @@ export function getsImg(data) {
 
 export function deletesImg(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/simg/',
+    url: '/back/simg/',
     method: 'delete',
     data
   })

@@ -25,8 +25,9 @@ import Layout from '@/layout'
   }
  */
 
-import tableRouter from './modules/table'
+import tableRouter from './modules/video'
 import imageRouter from './modules/image'
+import actorRouter from './modules/actor'
 
 /**
  * constantRoutes
@@ -138,7 +139,7 @@ export const constantRoutes = [
         meta: { title: 'External Link', icon: 'link' }
       }
     ]
-  },
+  }
 ]
 
 /**
@@ -157,14 +158,15 @@ export const asyncRoutes = [
         path: 'index',
         name: 'Form1',
         component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form', roles: ['admin']}
+        meta: {title: 'Form', icon: 'form', roles: ['admin']}
       }
     ]
   },
   tableRouter,
   imageRouter,
+  actorRouter,
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  {path: '*', redirect: '/404', hidden: true}
 ]
 
 const createRouter = () => new Router({

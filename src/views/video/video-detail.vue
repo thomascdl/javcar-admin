@@ -141,7 +141,7 @@
         <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="大封面" prop="bImg">
           <el-upload
             class="upload-demo"
-            action="http://127.0.0.1:8001/video/bimg/"
+            action="http://127.0.0.1:8001/back/bimg/"
             :on-success="handleSuccess"
             :limit="1"
             :before-upload="beforeUpload"
@@ -167,38 +167,38 @@
 </template>
 
 <script>
-import { fetchList, getFh, updateVideoDetail, deleteArticle, getActor, createVideoDetail } from '@/api/video-detail'
-import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+  import {fetchList, getFh, updateVideoDetail, deleteVideoDetail, getActor, createVideoDetail} from '@/api/video-detail'
+  import waves from '@/directive/waves' // waves directive
+  import {parseTime} from '@/utils'
+  import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-export default {
-  name: 'VideoDetail',
-  components: { Pagination },
-  directives: { waves },
+  export default {
+    name: 'VideoDetail',
+    components: {Pagination},
+    directives: {waves},
 
-  filters: {
-    sizeTransfer(value) {
-      return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
-    }
-  },
+    filters: {
+      sizeTransfer(value) {
+        return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
+      }
+    },
 
-  data() {
-    return {
-      options: [],
-      options2: [],
-      loading: false,
-      error: {},
-      poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
-      tableKey: 0,
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        limit: 20,
-        fh: undefined,
-        orderBy: 'id',
+    data() {
+      return {
+        options: [],
+        options2: [],
+        loading: false,
+        error: {},
+        poMap: {'1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g'},
+        tableKey: 0,
+        list: null,
+        total: 0,
+        listLoading: true,
+        listQuery: {
+          page: 1,
+          limit: 20,
+          fh: undefined,
+          orderBy: 'id',
         isReverse: false
       },
       sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
@@ -219,18 +219,18 @@ export default {
         create: 'Create'
       },
       rules: {
-        video: [{ required: true, message: 'fh is required', trigger: ['blur', 'change'] }],
+        video: [{required: true, message: 'fh is required', trigger: ['blur', 'change']}],
         // actors: [{ required: true, message: 'actors is required', trigger: ['blur', 'change'] }],
         size: [
-          { required: true, message: 'size is required', trigger: 'blur' },
-          { type: 'number', message: '必须是数字' },
-          { type: 'number', min: 0, message: '不能小于0' }
+          {required: true, message: 'size is required', trigger: 'blur'},
+          {type: 'number', message: '必须是数字'},
+          {type: 'number', min: 0, message: '不能小于0'}
         ],
-        release_date: [{required: true, message: 'date is required', trigger: 'change' }],
-        maker: [{ required: true, message: 'maker is required', trigger: 'blur' }],
-        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
-        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
-        bImg: [{ required: true, message: 'bImg is required', trigger: 'change' }]
+        release_date: [{required: true, message: 'date is required', trigger: 'change'}],
+        maker: [{required: true, message: 'maker is required', trigger: 'blur'}],
+        avers: [{required: true, message: 'avers is required', trigger: 'blur'}],
+        url: [{required: true, message: 'url is required', trigger: 'blur'}],
+        bImg: [{required: true, message: 'bImg is required', trigger: 'change'}]
       },
       downloadLoading: false
     }
@@ -250,10 +250,7 @@ export default {
           this.$nextTick(() => {
             this.loading = false
           })
-
-
         }).catch(() => {})
-
       } else {
         this.options = []
       }
@@ -267,10 +264,7 @@ export default {
           this.$nextTick(() => {
             this.loading = false
           })
-
-
         }).catch(() => {})
-
       } else {
         this.options = []
       }
@@ -399,7 +393,7 @@ export default {
     },
     handleDelete(row, index) {
       this.$confirm(`确定移除 ${row.fh} ？`).then(() => {
-        deleteArticle(row).then((res) => {
+        deleteVideoDetail(row).then((res) => {
           if (res.code !== 20000) {
             this.$notify({
               title: 'Fail',

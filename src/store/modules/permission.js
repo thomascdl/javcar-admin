@@ -48,14 +48,12 @@ const mutations = {
 
 const actions = {
   generateRoutes({ commit }, roles) {
-
     return new Promise(resolve => {
       let accessedRoutes
       if (roles.includes('admin')) {
         accessedRoutes = asyncRoutes || []
       } else {
         accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
-
       }
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)

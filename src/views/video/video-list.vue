@@ -129,7 +129,7 @@
         <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="小封面" prop="sImg">
           <el-upload
             class="upload-demo"
-            action="http://127.0.0.1:8001/video/simg/"
+            action="http://127.0.0.1:8001/back/simg/"
             :on-success="handleSuccess"
             :limit="1"
             :before-upload="beforeUpload"

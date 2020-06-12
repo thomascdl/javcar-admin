@@ -12,7 +12,6 @@ const tableRouter = {
     icon: 'table'
   },
   children: [
-
     {
       path: 'list',
       component: () => import('@/views/video/video-list'),

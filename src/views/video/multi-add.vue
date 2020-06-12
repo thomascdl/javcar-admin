@@ -6,7 +6,7 @@
       class="upload-demo"
       drag
       :before-upload="beforeImgUpload"
-      action="http://127.0.0.1:8001/video/simg/"
+      action="http://127.0.0.1:8001/back/simg/"
       multiple
     >
       <i class="el-icon-upload" />

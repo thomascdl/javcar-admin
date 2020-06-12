@@ -2,17 +2,15 @@ import request from '@/utils/request'
 
 export function fetchList(query) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
     url: '/video/fh/',
     method: 'get',
     params: query
   })
 }
 
-export function createArticle(data) {
+export function createVideo(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/',
+    url: '/back/video/',
     method: 'post',
     data
   })
@@ -20,26 +18,23 @@ export function createArticle(data) {
 
 export function multiUpload(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/multiUpload/',
+    url: '/back/video/batchadd/',
     method: 'post',
     data
   })
 }
 
-export function updateArticle(data) {
+export function updateVideo(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/',
+    url: '/back/video/',
     method: 'put',
     data
   })
 }
 
-export function deleteArticle(data) {
+export function deleteVideo(data) {
   return request({
-    baseURL: 'http://127.0.0.1:8001',
-    url: '/video/',
+    url: '/back/video/',
     method: 'delete',
     data
   })

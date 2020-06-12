@@ -146,10 +146,9 @@ export default {
 
   methods: {
     handleCellClick(row, column) {
-      if ((column.label === 'ID' || column.type === "selection") && this.showReviewer) {
+      if ((column.label === 'ID' || column.type === 'selection') && this.showReviewer) {
         this.$refs.tableData.toggleRowSelection(row)
       }
-
     },
     changeCheckStatus() {
       this.tableKey = this.tableKey + 1

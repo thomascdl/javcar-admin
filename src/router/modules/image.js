@@ -15,14 +15,14 @@ const imageRouter = {
     {
       path: 'simg',
       component: () => import('@/views/image/sImg'),
-      name: 'SimgTable',
-      meta: { title: '小图管理' }
+      name: 'sImgTable',
+      meta: {title: '小图管理'}
     },
     {
       path: 'bimg',
       component: () => import('@/views/image/bImg'),
-      name: 'BimgTable',
-      meta: { title: '大图管理' }
+      name: 'bImgTable',
+      meta: {title: '大图管理'}
     }
   ]
 }
