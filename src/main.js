@@ -6,7 +6,12 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en' // lang i18n
 
+import iView from 'iview';
+import 'iview/dist/styles/iview.css';
+
 import '@/styles/index.scss' // global css
+
+import '@/styles/font-awesome-4.7.0/css/font-awesome.min.css' // global css
 
 import App from './App'
 import store from './store'
@@ -26,7 +31,7 @@ import * as filters from './filters' // global filters
  * please remove it before going online ! ! !
  */
 if (process.env.NODE_ENV === 'production') {
-  const { mockXHR } = require('../mock')
+  const {mockXHR} = require('../mock')
   mockXHR()
 }
 
@@ -34,6 +39,8 @@ if (process.env.NODE_ENV === 'production') {
 // Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
 Vue.use(ElementUI)
+Vue.use(iView);
+
 
 // register global utility filters
 Object.keys(filters).forEach(key => {

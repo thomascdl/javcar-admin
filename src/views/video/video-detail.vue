@@ -38,19 +38,19 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="出版日期" width="150px" align="center">
+      <el-table-column label="出版日期" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.ctime | parseTime('{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="制作商" min-width="150px">
+      <el-table-column label="制作商" min-width="130px" show-overflow-tooltip>
         <template slot-scope="{row}">
           <span>{{ row.maker }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="系列" min-width="150px">
+      <el-table-column label="系列" min-width="200px" show-overflow-tooltip>
         <template slot-scope="{row}">
           <span>{{ row.series }}</span>
         </template>
@@ -62,13 +62,13 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="大小" width="110px" align="center">
+      <el-table-column label="大小" width="80px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.size|sizeTransfer }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             Edit
@@ -84,7 +84,8 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px"
+               style="width: 400px; margin-left:50px;">
         <el-form-item label="番号" prop="video" :error="error.video">
           <el-select
             v-model="temp.video"
@@ -140,6 +141,7 @@
 
         <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="大封面" prop="bImg">
           <el-upload
+            ref="upload"
             class="upload-demo"
             action="http://127.0.0.1:8001/back/bimg/"
             :on-success="handleSuccess"
@@ -199,16 +201,16 @@
           limit: 20,
           fh: undefined,
           orderBy: 'id',
-        isReverse: false
-      },
-      sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
-      temp: {
-        bimg: null,
-        director: null,
-        maker: null,
-        size: null,
-        release_date: null,
-        series: null,
+          isReverse: false
+        },
+        sortOptions: [{label: 'ID Ascending', key: false}, {label: 'ID Descending', key: true}],
+        temp: {
+          bimg: null,
+          director: null,
+          maker: null,
+          size: null,
+          release_date: null,
+          series: null,
         video: null,
         actors: []
       },
@@ -318,6 +320,7 @@
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
+        this.$refs['upload'].clearFiles()
       })
     },
     createData() {

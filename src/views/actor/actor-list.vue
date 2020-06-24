@@ -120,8 +120,9 @@
           </el-switch>
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="头像" prop="img">
+        <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="头像">
           <el-upload
+            ref="upload"
             class="upload-demo"
             action="http://127.0.0.1:8001/back/actorimg/"
             :on-success="handleSuccess"
@@ -193,8 +194,8 @@
           create: 'Create'
         },
         rules: {
-          name: [{required: true, message: 'name is required', trigger: 'blur'}],
-          img: [{required: true, message: 'img is required', trigger: 'change'}]
+          name: [{required: true, message: 'name is required', trigger: 'blur'}]
+          // img: [{ required: true, message: 'img is required', trigger: 'change' }]
         },
         downloadLoading: false
       }
@@ -252,6 +253,7 @@
         this.dialogFormVisible = true
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
+          this.$refs['upload'].clearFiles()
         })
       },
       createData() {
@@ -299,7 +301,6 @@
               } else {
                 const index = this.list.findIndex(v => v.id === this.temp.id)
                 this.list.splice(index, 1, res.data)
-
                 this.dialogFormVisible = false
                 this.$notify({
                   title: 'Success',

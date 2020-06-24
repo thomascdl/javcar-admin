@@ -25,7 +25,7 @@ import Layout from '@/layout'
   }
  */
 
-import tableRouter from './modules/video'
+import videoRouter from './modules/video'
 import imageRouter from './modules/image'
 import actorRouter from './modules/actor'
 
@@ -73,64 +73,6 @@ export const constantRoutes = [
   },
 
   {
-    path: '/nested',
-    component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: 'Nested',
-      icon: 'nested'
-    },
-    children: [
-      {
-        path: 'menu1',
-        component: () => import('@/views/nested/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: 'Menu1' },
-        children: [
-          {
-            path: 'menu1-1',
-            component: () => import('@/views/nested/menu1/menu1-1'),
-            name: 'Menu1-1',
-            meta: { title: 'Menu1-1' }
-          },
-          {
-            path: 'menu1-2',
-            component: () => import('@/views/nested/menu1/menu1-2'),
-            name: 'Menu1-2',
-            meta: { title: 'Menu1-2' },
-            children: [
-              {
-                path: 'menu1-2-1',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
-                name: 'Menu1-2-1',
-                meta: { title: 'Menu1-2-1' }
-              },
-              {
-                path: 'menu1-2-2',
-                component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
-                name: 'Menu1-2-2',
-                meta: { title: 'Menu1-2-2' }
-              }
-            ]
-          },
-          {
-            path: 'menu1-3',
-            component: () => import('@/views/nested/menu1/menu1-3'),
-            name: 'Menu1-3',
-            meta: { title: 'Menu1-3' }
-          }
-        ]
-      },
-      {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        meta: { title: 'menu2' }
-      }
-    ]
-  },
-
-  {
     path: 'external-link',
     component: Layout,
     children: [
@@ -147,22 +89,22 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
-  {
-    path: '/test',
-    component: Layout,
-    name: 'TEST',
-    meta: { roles: ['admin', 'super_editor'], title: 'TEST', icon: 'example' },
-    alwaysShow: true,
-    children: [
-      {
-        path: 'index',
-        name: 'Form1',
-        component: () => import('@/views/form/index'),
-        meta: {title: 'Form', icon: 'form', roles: ['admin']}
-      }
-    ]
-  },
-  tableRouter,
+  // {
+  //   path: '/test',
+  //   component: Layout,
+  //   name: 'TEST',
+  //   meta: { roles: ['admin', 'super_editor'], title: 'TEST', icon: 'example' },
+  //   alwaysShow: true,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'Form1',
+  //       component: () => import('@/views/form/index'),
+  //       meta: {title: 'Form', icon: 'form', roles: ['admin']}
+  //     }
+  //   ]
+  // },
+  videoRouter,
   imageRouter,
   actorRouter,
   // 404 page must be placed at the end !!!

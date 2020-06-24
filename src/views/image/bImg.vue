@@ -311,6 +311,7 @@ export default {
             })
             params.onError()
           } else {
+            this.total++
             this.$notify({
               title: 'Success',
               message: 'Upload Successfully',

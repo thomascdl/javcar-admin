@@ -38,25 +38,25 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="标题" min-width="150px">
+      <el-table-column label="标题" min-width="150px" show-overflow-tooltip>
         <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="演员" width="110px" align="center">
+      <el-table-column label="演员" width="110px" align="center" show-overflow-tooltip>
         <template slot-scope="{row}">
           <span>{{ row.avers }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="播放量" align="center" width="95">
+      <el-table-column label="播放量" align="center" width="65">
         <template slot-scope="{row}">
           <span>{{ row.plays }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             Edit
@@ -72,12 +72,13 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px"
+               style="width: 400px; margin-left:50px;">
         <el-form-item label="番号" prop="fh">
-          <el-input v-model="temp.fh" />
+          <el-input v-model="temp.fh"/>
         </el-form-item>
-        <el-form-item label="时长" prop="length">
-          <el-input v-model.number="temp.length" />
+        <el-form-item label="时长" :error="error.length" prop="length">
+          <el-input v-model.number="temp.length"/>
         </el-form-item>
         <el-form-item label="有码">
           <el-switch
@@ -92,8 +93,8 @@
         <el-form-item label="字幕">
           <el-switch
             v-model="temp.hasSubtitle"
-            active-text="字幕"
-            inactive-text="无字幕"
+            active-text="无字幕"
+            inactive-text="字幕"
           >
             active-color="#13ce66"
             inactive-color="#ff4949">
@@ -102,8 +103,8 @@
         <el-form-item label="高清">
           <el-switch
             v-model="temp.isHD"
-            active-text="高清"
-            inactive-text="非高清"
+            active-text="非高清"
+            inactive-text="高清"
           >
             active-color="#13ce66"
             inactive-color="#ff4949">
@@ -128,6 +129,7 @@
         </el-form-item>
         <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="小封面" prop="sImg">
           <el-upload
+            ref="upload"
             class="upload-demo"
             action="http://127.0.0.1:8001/back/simg/"
             :on-success="handleSuccess"
@@ -155,37 +157,44 @@
 </template>
 
 <script>
-import { fetchList, createArticle, updateArticle, deleteArticle } from '@/api/article'
-import waves from '@/directive/waves' // waves directive
+  import {fetchList, createVideo, updateVideo, deleteVideo} from '@/api/article'
+  import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
   name: 'VideoTable',
-  components: { Pagination },
-  directives: { waves },
+  components: {Pagination},
+  directives: {waves},
 
-  // filters: {
-  //   statusFilter(status) {
-  //     const statusMap = {
-  //       published: 'success',
-  //       draft: 'info',
-  //       deleted: 'danger'
-  //     }
-  //     return statusMap[status]
-  //   },
-  //   typeFilter(type) {
-  //     return calendarTypeKeyValue[type]
-  //   },
-  //   typeTransfer(value) {
-  //     return value === '1'
-  //   }
-  // },
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: 'success',
+        draft: 'info',
+        deleted: 'danger'
+      }
+      return statusMap[status]
+    },
+    // typeFilter(type) {
+    //   return calendarTypeKeyValue[type]
+    // },
+    typeTransfer(value) {
+      return value === '1'
+    },
+    actorFilter(value) {
+      if (value.indexOf(',') !== -1) {
+        return value.split(',')[0] + '...'
+      } else {
+        return value
+      }
+    }
+  },
 
   data() {
     return {
       error: {},
-      poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
+      poMap: {'1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g'},
       tableKey: 0,
       list: null,
       total: 0,
@@ -227,7 +236,7 @@ export default {
           { type: 'number', min: 0, message: '不能小于0' }
         ],
         genre: [{ required: true, message: 'genre is required', trigger: 'blur' }],
-        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
+        // avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
         url: [{ required: true, message: 'url is required', trigger: 'blur' }],
         sImg: [{ required: true, message: 'sImg is required', trigger: 'change' }]
       },
@@ -292,12 +301,14 @@ export default {
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
+        this.$refs['upload'].clearFiles()
       })
     },
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          createArticle(this.temp).then((res) => {
+          this.error = {}
+          createVideo(this.temp).then((res) => {
             if (res.code !== 20000) {
               for (const key in res.error) {
                 res.error[key] = res.error[key][0]
@@ -332,8 +343,9 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.error = {}
           const tempData = Object.assign({}, this.temp)
-          updateArticle(tempData).then((res) => {
+          updateVideo(tempData).then((res) => {
             if (res.code !== 20000) {
               for (const key in res.error) {
                 res.error[key] = res.error[key][0]
@@ -356,7 +368,7 @@ export default {
     },
     handleDelete(row, index) {
       this.$confirm(`确定移除 ${row.fh} ？`).then(() => {
-        deleteArticle(row).then((res) => {
+        deleteVideo(row).then((res) => {
           if (res.code !== 20000) {
             this.$notify({
               title: 'Fail',
