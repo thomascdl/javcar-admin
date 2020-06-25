@@ -1,17 +1,36 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input
+        v-model="listQuery.fh"
+        placeholder="Search"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
       <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreate"
+      >
         Add
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+      <el-button
+        v-waves
+        :loading="downloadLoading"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-download"
+        @click="handleDownload"
+      >
         Export
       </el-button>
     </div>
@@ -26,7 +45,14 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="60" :class-name="getSortClass('id')">
+      <el-table-column
+        label="ID"
+        prop="id"
+        sortable="custom"
+        align="center"
+        width="60"
+        :class-name="getSortClass('id')"
+      >
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
         </template>
@@ -81,11 +107,23 @@
 
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px"
-               style="width: 400px; margin-left:50px;">
+      <el-form
+        ref="dataForm"
+        :rules="rules"
+        :model="temp"
+        label-position="right"
+        label-width="80px"
+        style="width: 400px; margin-left:50px;"
+      >
         <el-form-item label="番号" prop="video" :error="error.video">
           <el-select
             v-model="temp.video"
@@ -133,7 +171,7 @@
           <el-input v-model.number="temp.size" />
         </el-form-item>
         <el-form-item label="出版日" prop="release_date" :error="error.release_date">
-          <el-date-picker v-model="temp.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd"/>
+          <el-date-picker v-model="temp.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd" />
         </el-form-item>
         <el-form-item label="系列" prop="series" :error="error.series">
           <el-input v-model="temp.series" />
@@ -169,48 +207,48 @@
 </template>
 
 <script>
-  import {fetchList, getFh, updateVideoDetail, deleteVideoDetail, getActor, createVideoDetail} from '@/api/video-detail'
-  import waves from '@/directive/waves' // waves directive
-  import {parseTime} from '@/utils'
-  import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { fetchList, getFh, updateVideoDetail, deleteVideoDetail, getActor, createVideoDetail } from '@/api/video-detail'
+import waves from '@/directive/waves' // waves directive
+import { parseTime } from '@/utils'
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-  export default {
-    name: 'VideoDetail',
-    components: {Pagination},
-    directives: {waves},
+export default {
+  name: 'VideoDetail',
+  components: { Pagination },
+  directives: { waves },
 
-    filters: {
-      sizeTransfer(value) {
-        return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
-      }
-    },
+  filters: {
+    sizeTransfer(value) {
+      return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
+    }
+  },
 
-    data() {
-      return {
-        options: [],
-        options2: [],
-        loading: false,
-        error: {},
-        poMap: {'1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g'},
-        tableKey: 0,
-        list: null,
-        total: 0,
-        listLoading: true,
-        listQuery: {
-          page: 1,
-          limit: 20,
-          fh: undefined,
-          orderBy: 'id',
-          isReverse: false
-        },
-        sortOptions: [{label: 'ID Ascending', key: false}, {label: 'ID Descending', key: true}],
-        temp: {
-          bimg: null,
-          director: null,
-          maker: null,
-          size: null,
-          release_date: null,
-          series: null,
+  data() {
+    return {
+      options: [],
+      options2: [],
+      loading: false,
+      error: {},
+      poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
+      tableKey: 0,
+      list: null,
+      total: 0,
+      listLoading: true,
+      listQuery: {
+        page: 1,
+        limit: 20,
+        fh: undefined,
+        orderBy: 'id',
+        isReverse: false
+      },
+      sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
+      temp: {
+        bimg: null,
+        director: null,
+        maker: null,
+        size: null,
+        release_date: null,
+        series: null,
         video: null,
         actors: []
       },
@@ -221,18 +259,18 @@
         create: 'Create'
       },
       rules: {
-        video: [{required: true, message: 'fh is required', trigger: ['blur', 'change']}],
+        video: [{ required: true, message: 'fh is required', trigger: ['blur', 'change'] }],
         // actors: [{ required: true, message: 'actors is required', trigger: ['blur', 'change'] }],
         size: [
-          {required: true, message: 'size is required', trigger: 'blur'},
-          {type: 'number', message: '必须是数字'},
-          {type: 'number', min: 0, message: '不能小于0'}
+          { required: true, message: 'size is required', trigger: 'blur' },
+          { type: 'number', message: '必须是数字' },
+          { type: 'number', min: 0, message: '不能小于0' }
         ],
-        release_date: [{required: true, message: 'date is required', trigger: 'change'}],
-        maker: [{required: true, message: 'maker is required', trigger: 'blur'}],
-        avers: [{required: true, message: 'avers is required', trigger: 'blur'}],
-        url: [{required: true, message: 'url is required', trigger: 'blur'}],
-        bImg: [{required: true, message: 'bImg is required', trigger: 'change'}]
+        release_date: [{ required: true, message: 'date is required', trigger: 'change' }],
+        maker: [{ required: true, message: 'maker is required', trigger: 'blur' }],
+        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
+        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
+        bImg: [{ required: true, message: 'bImg is required', trigger: 'change' }]
       },
       downloadLoading: false
     }
@@ -252,7 +290,8 @@
           this.$nextTick(() => {
             this.loading = false
           })
-        }).catch(() => {})
+        }).catch(() => {
+        })
       } else {
         this.options = []
       }
@@ -266,7 +305,8 @@
           this.$nextTick(() => {
             this.loading = false
           })
-        }).catch(() => {})
+        }).catch(() => {
+        })
       } else {
         this.options = []
       }
@@ -415,7 +455,8 @@
             })
           }
         })
-      }).catch(() => {})
+      }).catch(() => {
+      })
     },
 
     handleDownload() {
