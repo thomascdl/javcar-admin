@@ -2,13 +2,14 @@
   <div :class="[type === 'horizantal' ? 'vm-card-horizantal' : 'vm-card-vertical' , 'vm-panel']">
     <div class="card-img">
       <el-image
-        style="height: 200px;width: 147px"
+        :style="imgStyle"
+        style="overflow: visible"
         :src="img"
         :preview-src-list="toArray(img)"
       />
-      <div v-if="editable && type === 'vertical'" class="control">
+      <div v-if="editable && type === 'vertical'" class="control" :style="controlStyle">
         <span class="delete">
-          <i class="fa fa-trash" @click="modalDelete=true"/>
+          <i class="fa fa-trash" @click="modalDelete=true" />
         </span>
       </div>
     </div>
@@ -27,40 +28,48 @@
   </div>
 </template>
 <script>
-  export default {
-    name: 'VmCard',
-    props: {
-      type: {
-        type: String,
-        default: 'vertical'
-      },
-      editable: {
-        type: Boolean,
-        default: false
-      },
-      title: {
-        type: String,
-        default: 'Title'
-      },
-      img: {
-        type: String,
-        default: require('@/assets/img/img-1.jpg')
-      },
+export default {
+  name: 'VmCard',
+  props: {
+    controlStyle: {
+      type: String,
+      default: ''
     },
-    data: function () {
-      return {
-        modalDelete: false
-      }
+    imgStyle: {
+      type: String,
+      default: ''
     },
-    methods: {
-      deleteOk: function () {
-        this.$emit('delete-ok')
-      },
-      toArray(data) {
-        return [data]
-      },
+    type: {
+      type: String,
+      default: 'vertical'
+    },
+    editable: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      default: 'Title'
+    },
+    img: {
+      type: String,
+      default: require('@/assets/img/img-1.jpg')
+    }
+  },
+  data: function() {
+    return {
+      modalDelete: false
+    }
+  },
+  methods: {
+    deleteOk: function() {
+      this.$emit('delete-ok')
+    },
+    toArray(data) {
+      return [data]
     }
   }
+}
 </script>
 
 <style lang="less" scoped src="@/theme/index.less"/>
@@ -71,6 +80,10 @@
 
   .card-desc {
     text-align: center;
+  }
+  .control {
+    position: absolute;
+    right: 20px;
   }
 </style>
 

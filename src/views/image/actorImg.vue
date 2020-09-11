@@ -1,8 +1,9 @@
 <template>
   <div class="my-container">
     <VmImageList
+      img-style="height:125px;width:125px"
+      control-style="right: 16px; button: -16px"
       :data="list"
-      control-style="right: 9px;  button: -16px"
       :total="total"
       class="vm-margin"
       @get-data="getList"
@@ -45,7 +46,7 @@
 
 <script>
 import VmImageList from '@/components/Imglist/vm-image-list'
-import { getsImg, uploadsImg, deletesImg } from '@/api/simg'
+import { getActorImg, uploadActorImg, deleteActorImg } from '@/api/actorimg'
 
 export default {
   name: 'ImageList',
@@ -77,7 +78,7 @@ export default {
       const form = new FormData()
       // 文件对象
       form.append('simg', file)
-      uploadsImg(form)
+      uploadActorImg(form)
         .then(res => {
           if (res.code !== 20000) {
             this.$notify({
@@ -123,7 +124,7 @@ export default {
       this.$refs['upload'].clearFiles()
     },
     getList(data) {
-      getsImg(data).then(response => {
+      getActorImg(data).then(response => {
         this.list = response.data
         this.total = response.count
       }).catch(e => {
@@ -131,7 +132,7 @@ export default {
       })
     },
     deleteImg(data) {
-      deletesImg(data).then((res) => {
+      deleteActorImg(data).then((res) => {
         if (res.code !== 20000) {
           this.$notify({
             title: 'Fail',

@@ -75,17 +75,16 @@
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px"
                style="width: 400px; margin-left:50px;">
         <el-form-item label="番号" prop="fh">
-          <el-input v-model="temp.fh"/>
+          <el-input v-model="temp.fh" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="时长" :error="error.length" prop="length">
-          <el-input v-model.number="temp.length"/>
+          <el-input v-model.number="temp.length" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="有码">
           <el-switch
             v-model="temp.isCensored"
             active-text="有码"
             inactive-text="无码"
-          >
             active-color="#13ce66"
             inactive-color="#ff4949">
           </el-switch>
@@ -95,7 +94,6 @@
             v-model="temp.hasSubtitle"
             active-text="无字幕"
             inactive-text="字幕"
-          >
             active-color="#13ce66"
             inactive-color="#ff4949">
           </el-switch>
@@ -105,22 +103,21 @@
             v-model="temp.isHD"
             active-text="非高清"
             inactive-text="高清"
-          >
             active-color="#13ce66"
             inactive-color="#ff4949">
           </el-switch>
         </el-form-item>
         <el-form-item label="类别" prop="genre">
-          <el-input v-model="temp.genre" />
+          <el-input v-model="temp.genre" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="演员" prop="avers">
-          <el-input v-model="temp.avers" />
+          <el-input v-model="temp.avers" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="路径" :error="error.url" prop="url">
           <el-input v-model="temp.url" />
         </el-form-item>
         <el-form-item label="标题" :error="error.title" prop="title">
-          <el-input v-model="temp.title" />
+          <el-input v-model="temp.title" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="位置">
           <el-select v-model="temp.position" class="filter-item" placeholder="Please select">

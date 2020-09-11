@@ -23,6 +23,12 @@ const imageRouter = {
       component: () => import('@/views/image/bImg'),
       name: 'bImgTable',
       meta: {title: '大图管理'}
+    },
+    {
+      path: 'actorimg',
+      component: () => import('@/views/image/actorImg'),
+      name: 'actorImgTable',
+      meta: {title: '演员图片'}
     }
   ]
 }
