@@ -8,3 +8,19 @@ export function fetchVideo(query) {
     params: query
   })
 }
+
+export function checkVideo(query) {
+  return request({
+    url: '/back/video/check/',
+    method: 'get',
+    params: query
+  })
+}
+
+export function getImgOrActor(query) {
+  return request({
+    url: '/back/video/getImgOrActor/',
+    method: 'get',
+    params: query
+  })
+}
