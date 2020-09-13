@@ -77,18 +77,19 @@ export default {
       // 根据后台需求数据格式
       const form = new FormData()
       // 文件对象
-      form.append('simg', file)
+      form.append('actorImg', file)
       uploadActorImg(form)
         .then(res => {
           if (res.code !== 20000) {
             this.$notify({
               title: 'Fail',
-              message: 'Upload Fail',
+              message: res.error,
               type: 'warning',
               duration: 5000
             })
             params.onError()
           } else {
+            this.list.push(res.data)
             this.total++
             this.$notify({
               title: 'Success',

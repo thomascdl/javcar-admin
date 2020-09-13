@@ -3,6 +3,10 @@
     <div class="filter-container">
       <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
 
+      <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
+      </el-select>
+
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
@@ -131,8 +135,11 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
+        isReverse: false,
+        orderBy: 'id',
         fh: undefined
       },
+      sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
       dialogFormVisible: false,
       downloadLoading: false,
       multipleSelection: [],
@@ -218,27 +225,27 @@ export default {
     handleCreate() {
       this.dialogFormVisible = true
     },
-    handleDeleteNoWarning(row, index) {
-      deletebImg(row).then((res) => {
-        if (res.code !== 20000) {
-          this.$notify({
-            title: 'Fail',
-            message: 'Delete Fail',
-            type: 'warning',
-            duration: 5000
-          })
-        } else {
-          this.list.splice(index, 1)
-          this.total--
-          this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
-            type: 'success',
-            duration: 3000
-          })
-        }
-      }).catch(() => {})
-    },
+    // handleDeleteNoWarning(row, index) {
+    //   deletebImg(row).then((res) => {
+    //     if (res.code !== 20000) {
+    //       this.$notify({
+    //         title: 'Fail',
+    //         message: 'Delete Fail',
+    //         type: 'warning',
+    //         duration: 5000
+    //       })
+    //     } else {
+    //       this.list.splice(index, 1)
+    //       this.total--
+    //       this.$notify({
+    //         title: 'Success',
+    //         message: 'Delete Successfully',
+    //         type: 'success',
+    //         duration: 3000
+    //       })
+    //     }
+    //   }).catch(() => {})
+    // },
     handleDelete(row, index) {
       this.$confirm(`确定移除 ${row.name} ？`).then(() => {
         deletebImg(row).then((res) => {
@@ -305,12 +312,13 @@ export default {
           if (res.code !== 20000) {
             this.$notify({
               title: 'Fail',
-              message: 'Upload Fail',
+              message: res.error,
               type: 'warning',
               duration: 5000
             })
             params.onError()
           } else {
+            this.list.push(res.data)
             this.total++
             this.$notify({
               title: 'Success',

@@ -124,7 +124,7 @@
         label-width="80px"
         style="width: 400px; margin-left:50px;"
       >
-        <el-form-item label="番号" prop="video" :error="error.video">
+        <el-form-item label="番号" prop="video" :error="error.video" >
           <el-select
             v-model="temp.video"
             filterable
@@ -133,6 +133,7 @@
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
             :loading="loading"
+            :disabled="dialogStatus==='update'"
           >
             <el-option
               v-for="item in options"
@@ -152,6 +153,7 @@
             placeholder="请输入关键词"
             :remote-method="remoteMethodActor"
             :loading="loading"
+            :disabled="dialogStatus==='update'"
           >
             <el-option
               v-for="item in options2"
@@ -174,7 +176,7 @@
           <el-date-picker v-model="temp.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd" />
         </el-form-item>
         <el-form-item label="系列" prop="series" :error="error.series">
-          <el-input v-model="temp.series" />
+          <el-input v-model="temp.series" type="textarea" />
         </el-form-item>
 
         <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="大封面" prop="bImg">

@@ -29,6 +29,12 @@ const tableRouter = {
       component: () => import('@/views/video/video-detail'),
       name: 'detail',
       meta: { title: '影片详情' }
+    },
+    {
+      path: 'fetch',
+      component: () => import('@/views/video/fetch-video'),
+      name: 'fetch',
+      meta: { title: '获取影片' }
     }
   ]
 }

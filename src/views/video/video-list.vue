@@ -72,8 +72,7 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px"
-               style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="right" label-width="80px" style="width: 400px; margin-left:50px;">
         <el-form-item label="番号" prop="fh">
           <el-input v-model="temp.fh" :disabled="dialogStatus==='update'" />
         </el-form-item>
@@ -108,16 +107,16 @@
           </el-switch>
         </el-form-item>
         <el-form-item label="类别" prop="genre">
-          <el-input v-model="temp.genre" :disabled="dialogStatus==='update'" />
+          <el-input v-model="temp.genre" type="textarea" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="演员" prop="avers">
-          <el-input v-model="temp.avers" :disabled="dialogStatus==='update'" />
+          <el-input v-model="temp.avers" type="textarea" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="路径" :error="error.url" prop="url">
           <el-input v-model="temp.url" />
         </el-form-item>
         <el-form-item label="标题" :error="error.title" prop="title">
-          <el-input v-model="temp.title" :disabled="dialogStatus==='update'" />
+          <el-input v-model="temp.title" type="textarea" :disabled="dialogStatus==='update'" />
         </el-form-item>
         <el-form-item label="位置">
           <el-select v-model="temp.position" class="filter-item" placeholder="Please select">
@@ -253,6 +252,11 @@ export default {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
         this.list = response.data
+        for (const each of this.list) {
+          each['isCensored'] = each['isCensored'] === '1'
+          each['isHD'] = each['isHD'] === '1'
+          each['hasSubtitle'] = each['hasSubtitle'] === '1'
+        }
         this.total = response.count
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -328,9 +332,9 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.temp.isHD = this.temp.isHD === '1'
-      this.temp.isCensored = this.temp.isCensored === '1'
-      this.temp.hasSubtitle = this.temp.hasSubtitle === '1'
+      // this.temp.isHD = this.temp.isHD === '1'
+      // this.temp.isCensored = this.temp.isCensored === '1'
+      // this.temp.hasSubtitle = this.temp.hasSubtitle === '1'
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
