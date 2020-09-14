@@ -142,7 +142,14 @@ export default {
   methods: {
     handleGetImgOrActor(key) {
       this.listLoading = true
-      getImgOrActor({ fh: this.video.fh, key: key }).then(response => {
+      const temp = {
+        fh: this.video.fh,
+        key: key,
+        simg: this.video.smallimg,
+        bimg: this.video.bigimg,
+        actorimg: this.video.actorimg[key]
+      }
+      getImgOrActor(temp).then(response => {
         if (response.code === 20000) {
           this.checkInfo = Object.assign(this.checkInfo, response.data)
         } else {
