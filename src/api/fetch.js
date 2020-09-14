@@ -24,3 +24,11 @@ export function getImgOrActor(query) {
     params: query
   })
 }
+
+export function getSize(query) {
+  return request({
+    url: '/back/video/getSize/',
+    method: 'get',
+    params: query
+  })
+}

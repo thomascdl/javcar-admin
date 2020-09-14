@@ -78,6 +78,26 @@
 
       </div>
     </div>
+    <div v-if="active === 2">
+      <el-form ref="detailForm" v-loading="listLoading" :rules="detailRules" :model="detail" label-position="right" label-width="80px" style="width: 500px; margin:0 auto;">
+
+        <el-form-item label="导演" prop="director">
+          <el-input v-model="detail.director" />
+        </el-form-item>
+        <el-form-item label="制作商" prop="maker">
+          <el-input v-model="detail.maker" />
+        </el-form-item>
+        <el-form-item label="大小" prop="size">
+          <el-input v-model.number="detail.size" />
+        </el-form-item>
+        <el-form-item label="出版日" prop="release_date" :error="error.release_date">
+          <el-date-picker v-model="detail.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd" />
+        </el-form-item>
+        <el-form-item label="系列" prop="series" :error="error.series">
+          <el-input v-model="detail.series" type="textarea" />
+        </el-form-item>
+      </el-form>
+    </div>
     <div slot="footer" class="dialog-footer" style="margin: 30px 250px;overflow: auto">
       <el-button v-if="active===1||active===2" type="primary" style="float:left" @click="prev()">
         上一步
@@ -94,9 +114,8 @@
 
 <script>
 import { createVideo } from '@/api/article'
-import { fetchVideo, checkVideo, getImgOrActor } from '@/api/fetch'
+import { fetchVideo, checkVideo, getImgOrActor, getSize } from '@/api/fetch'
 import waves from '@/directive/waves' // waves directive
-
 
 export default {
   name: 'FetchVideo',
@@ -125,6 +144,16 @@ export default {
         avers: '',
         title: ''
       },
+      detail: {
+        bimg: null,
+        director: '',
+        maker: '',
+        size: 0,
+        release_date: '1970-01-01',
+        series: '',
+        video: null,
+        actors: []
+      },
       rules: {
         title: [{ required: true, message: 'title is required', trigger: 'blur' }],
         fh: [{ required: true, message: 'fh is required', trigger: 'blur' }],
@@ -135,6 +164,18 @@ export default {
         ],
         genre: [{ required: true, message: 'genre is required', trigger: 'blur' }],
         url: [{ required: true, message: 'url is required', trigger: 'blur' }],
+      },
+      detailRules: {
+        size: [
+          { required: true, message: 'size is required', trigger: 'blur' },
+          { type: 'number', message: '必须是数字' },
+          { type: 'number', min: 0, message: '不能小于0' }
+        ],
+        release_date: [{ required: true, message: 'date is required', trigger: 'change' }],
+        maker: [{ required: true, message: 'maker is required', trigger: 'blur' }],
+        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
+        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
+        bImg: [{ required: true, message: 'bImg is required', trigger: 'change' }]
       },
     }
   },
@@ -202,16 +243,49 @@ export default {
           }
         })
       } else if (this.active === 1) {
+        for (const item in this.checkInfo){
+          if (!this.checkInfo[item]){
+            this.$notify({
+              title: 'warning',
+              message: '请完成获取！',
+              type: 'warning',
+              duration: 2000
+            })
+            return
+          }
+        }
+        this.handleGetSize()
         if (this.active++ > 2) this.active = 0
       }
+    },
+    handleGetSize() {
+      this.listLoading = true
+      getSize({ url: this.video.url }).then(response => {
+        if (response.code === 20000) {
+          this.detail = Object.assign(this.detail, response.data)
+        } else {
+          this.$notify({
+            title: 'Fail',
+            message: 'get Fail',
+            type: 'warning',
+            duration: 2000
+          })
+        }
+        setTimeout(() => {
+          this.listLoading = false
+        }, 500)
+      }).catch( e => {
+        this.listLoading = false
+        console.log(e)
+      })
     },
     getVideoInfo() {
       this.resetVideo()
       this.listLoading = true
       fetchVideo(this.listQuery).then(response => {
         if (response.code === 20000) {
-          this.video = Object.assign(this.video, response.data)
-          // this.videoInfo = response.data
+          this.video = Object.assign(this.video, response.data['video_info'])
+          this.detail = Object.assign(this.detail, response.data['video_detail'])
         } else {
           this.$notify({
             title: 'Fail',
