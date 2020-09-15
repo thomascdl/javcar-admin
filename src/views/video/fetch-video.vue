@@ -69,10 +69,12 @@
       <div class="filter-container" style="margin: 0 auto;width:315px">
         <el-form ref="checkForm" v-loading="listLoading" :model="checkInfo" label-position="right" label-width="120px" style="width: 500px; margin:0 auto;">
           <el-form-item v-for="(value, key, index) in checkInfo" :key="index" :label="key">
-            ：{{ value }}
-            <el-button v-if="!value" type="success" size="mini" style="margin-left: 10px" @click="handleGetImgOrActor(key)">
-              获取
-            </el-button>
+            <div v-if="key !== 'actor_id'">
+              ：{{ value }}
+              <el-button v-if="!value" type="success" size="mini" style="margin-left: 10px" @click="handleGetImgOrActor(key)">
+                获取
+              </el-button>
+            </div>
           </el-form-item>
         </el-form>
 
@@ -113,8 +115,7 @@
 </template>
 
 <script>
-import { createVideo } from '@/api/article'
-import { fetchVideo, checkVideo, getImgOrActor, getSize } from '@/api/fetch'
+import { fetchVideo, checkVideo, getImgOrActor, getSize, createVideo } from '@/api/fetch'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -151,7 +152,6 @@ export default {
         size: 0,
         release_date: '1970-01-01',
         series: '',
-        video: null,
         actors: []
       },
       rules: {
@@ -255,6 +255,12 @@ export default {
           }
         }
         this.handleGetSize()
+        this.detail.actors = []
+        for (const key in this.checkInfo) {
+          if (key !== 'simg' && key !== 'bimg') {
+            this.detail.actors.push(this.checkInfo[key])
+          }
+        }
         if (this.active++ > 2) this.active = 0
       }
     },
@@ -321,27 +327,44 @@ export default {
         title: ''
       }
     },
-    handleCreate() {
-      this.resetVideo()
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-        this.$refs['upload'].clearFiles()
-      })
+    resetDetail() {
+      this.detail = {
+        bimg: null,
+        director: '',
+        maker: '',
+        size: 0,
+        release_date: '1970-01-01',
+        series: '',
+        actors: []
+      }
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs['detailForm'].validate((valid) => {
         if (valid) {
-          this.error = {}
-          createVideo(this.temp).then((res) => {
+
+          createVideo({ video:this.video, detail:this.detail }).then((res) => {
+            const video_error = res.error['video_error']
+            const detail_error = res.error['detail_error']
+            const video_data = res.error['video_data']
+            const detail_data = res.error['detail_data']
             if (res.code !== 20000) {
-              for (const key in res.error) {
-                res.error[key] = res.error[key][0]
+              if (video_error !== ''){
+                for (const key in video_error) {
+                  video_error[key] = video_error[key][0]
+                }
+                this.error = video_error
+                this.active = 0
+              } else {
+                for (const key in detail_error) {
+                  detail_error[key] = detail_error[key][0]
+                }
+                this.error = detail_error
+                this.active = 2
               }
-              this.error = res.error
             } else {
-              this.list.unshift(res.data)
-              this.total++
-              this.dialogFormVisible = false
+              this.active = 0
+              this.resetVideo()
+              this.resetDetail()
               this.$notify({
                 title: 'Success',
                 message: 'Created Successfully',

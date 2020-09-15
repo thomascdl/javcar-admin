@@ -32,3 +32,12 @@ export function getSize(query) {
     params: query
   })
 }
+
+
+export function createVideo(data) {
+  return request({
+    url: '/back/video/createVideo/',
+    method: 'post',
+    data
+  })
+}
