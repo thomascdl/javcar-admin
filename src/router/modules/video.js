@@ -19,12 +19,6 @@ const tableRouter = {
       meta: { title: '影片列表' }
     },
     {
-      path: 'multi',
-      component: () => import('@/views/video/multi-add'),
-      name: 'multi',
-      meta: { title: '批量添加' }
-    },
-    {
       path: 'detail',
       component: () => import('@/views/video/video-detail'),
       name: 'detail',
