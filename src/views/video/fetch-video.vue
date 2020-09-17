@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-steps :active="active" align-center style="margin-bottom: 20px">
       <el-step title="获取影片信息" />
-      <el-step title="获取演员信息" />
+      <el-step title="获取演员,图片" />
       <el-step title="获取影片详情" />
     </el-steps>
     <div v-if="active === 0">
@@ -13,7 +13,7 @@
         </el-button>
       </div>
       <el-form ref="dataForm" v-loading="listLoading" :rules="rules" :model="video" label-position="right" label-width="80px" style="width: 500px; margin:0 auto;">
-        <el-form-item label="番号" prop="fh">
+        <el-form-item label="番号" :error="error.fh" prop="fh">
           <el-input v-model="video.fh" />
         </el-form-item>
         <el-form-item label="时长" :error="error.length" prop="length">
@@ -66,23 +66,18 @@
       </el-form>
     </div>
     <div v-if="active === 1">
-      <div class="filter-container" style="margin: 0 auto;width:315px">
-        <el-form ref="checkForm" v-loading="listLoading" :model="checkInfo" label-position="right" label-width="120px" style="width: 500px; margin:0 auto;">
-          <el-form-item v-for="(value, key, index) in checkInfo" :key="index" :label="key">
-            <div v-if="key !== 'actor_id'">
-              ：{{ value }}
-              <el-button v-if="!value" type="success" size="mini" style="margin-left: 10px" @click="handleGetImgOrActor(key)">
-                获取
-              </el-button>
-            </div>
-          </el-form-item>
-        </el-form>
-
-      </div>
+      <el-form id="selectForm" ref="checkForm" v-loading="listLoading" :model="checkInfo" size="small" label-position="right" label-width="120px" style="width: 300px; margin:0 auto">
+        <el-form-item v-for="(value, key, index) in checkInfo" :key="index" :label="getLabel(key)" style="margin-bottom: 15px">
+          <svg-icon v-if="value" style="font-size: 18px;position: relative;top:1px" icon-class="sure" />
+          <svg-icon v-else style="font-size: 18px;position: relative;top:1px" icon-class="notok" />
+          <el-button v-if="!value" type="success" size="mini" style="margin-left: 10px ; padding: 4px 6px" @click="handleGetImgOrActor(key)">
+            获取
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
     <div v-if="active === 2">
       <el-form ref="detailForm" v-loading="listLoading" :rules="detailRules" :model="detail" label-position="right" label-width="80px" style="width: 500px; margin:0 auto;">
-
         <el-form-item label="导演" prop="director">
           <el-input v-model="detail.director" />
         </el-form-item>
@@ -92,10 +87,10 @@
         <el-form-item label="大小" prop="size">
           <el-input v-model.number="detail.size" />
         </el-form-item>
-        <el-form-item label="出版日" prop="release_date" :error="error.release_date">
+        <el-form-item label="出版日" prop="release_date">
           <el-date-picker v-model="detail.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd" />
         </el-form-item>
-        <el-form-item label="系列" prop="series" :error="error.series">
+        <el-form-item label="系列" prop="series">
           <el-input v-model="detail.series" type="textarea" />
         </el-form-item>
       </el-form>
@@ -127,33 +122,12 @@ export default {
       active: 0,
       error: {},
       poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
-      tableKey: 0,
       listLoading: false,
       listQuery: {
-        fh: undefined,
+        fh: undefined
       },
-      video: {
-        simg: null,
-        position: '1',
-        isCensored: true,
-        hasSubtitle: false,
-        length: undefined,
-        isHD: true,
-        fh: '',
-        url: 'J:/迅雷10/JUY-437.mp4',
-        genre: '',
-        avers: '',
-        title: ''
-      },
-      detail: {
-        bimg: null,
-        director: '',
-        maker: '',
-        size: 0,
-        release_date: '1970-01-01',
-        series: '',
-        actors: []
-      },
+      video: {},
+      detail: {},
       rules: {
         title: [{ required: true, message: 'title is required', trigger: 'blur' }],
         fh: [{ required: true, message: 'fh is required', trigger: 'blur' }],
@@ -163,7 +137,7 @@ export default {
           { type: 'number', min: 0, message: '不能小于0' }
         ],
         genre: [{ required: true, message: 'genre is required', trigger: 'blur' }],
-        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
+        url: [{ required: true, message: 'url is required', trigger: 'blur' }]
       },
       detailRules: {
         size: [
@@ -172,15 +146,24 @@ export default {
           { type: 'number', min: 0, message: '不能小于0' }
         ],
         release_date: [{ required: true, message: 'date is required', trigger: 'change' }],
-        maker: [{ required: true, message: 'maker is required', trigger: 'blur' }],
-        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
-        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
-        bImg: [{ required: true, message: 'bImg is required', trigger: 'change' }]
-      },
+        maker: [{ required: true, message: 'maker is required', trigger: 'blur' }]
+      }
     }
   },
-
+  created() {
+    this.resetVideo()
+    this.resetDetail()
+  },
   methods: {
+    getLabel(key) {
+      if (key === 'simg') {
+        return '小图'
+      } else if (key === 'bimg') {
+        return '大图'
+      } else {
+        return key
+      }
+    },
     handleGetImgOrActor(key) {
       this.listLoading = true
       const temp = {
@@ -198,20 +181,20 @@ export default {
             title: 'Fail',
             message: 'Check Fail',
             type: 'warning',
-            duration: 2000
+            duration: 3000
           })
         }
         setTimeout(() => {
           this.listLoading = false
         }, 500)
-      }).catch( e => {
+      }).catch(e => {
         this.listLoading = false
         console.log(e)
       })
     },
     handleCheck() {
       this.listLoading = true
-      checkVideo({avers: this.video.avers, fh: this.video.fh}).then(response => {
+      checkVideo({ avers: this.video.avers, fh: this.video.fh }).then(response => {
         if (response.code === 20000) {
           this.checkInfo = response.data
         } else {
@@ -219,13 +202,13 @@ export default {
             title: 'Fail',
             message: 'Check Fail',
             type: 'warning',
-            duration: 2000
+            duration: 3000
           })
         }
         setTimeout(() => {
           this.listLoading = false
         }, 500)
-      }).catch( e => {
+      }).catch(e => {
         this.listLoading = false
         console.log(e)
       })
@@ -243,8 +226,8 @@ export default {
           }
         })
       } else if (this.active === 1) {
-        for (const item in this.checkInfo){
-          if (!this.checkInfo[item]){
+        for (const item in this.checkInfo) {
+          if (!this.checkInfo[item]) {
             this.$notify({
               title: 'warning',
               message: '请完成获取！',
@@ -254,7 +237,9 @@ export default {
             return
           }
         }
+        // 获取size
         this.handleGetSize()
+        // 获取detail的actors
         this.detail.actors = []
         for (const key in this.checkInfo) {
           if (key !== 'simg' && key !== 'bimg') {
@@ -280,7 +265,7 @@ export default {
         setTimeout(() => {
           this.listLoading = false
         }, 500)
-      }).catch( e => {
+      }).catch(e => {
         this.listLoading = false
         console.log(e)
       })
@@ -303,7 +288,7 @@ export default {
         setTimeout(() => {
           this.listLoading = false
         }, 500)
-      }).catch( e => {
+      }).catch(e => {
         this.listLoading = false
         console.log(e)
       })
@@ -311,7 +296,6 @@ export default {
     handleFilter() {
       this.getVideoInfo()
     },
-
     resetVideo() {
       this.video = {
         simg: null,
@@ -341,14 +325,13 @@ export default {
     createData() {
       this.$refs['detailForm'].validate((valid) => {
         if (valid) {
-
-          createVideo({ video:this.video, detail:this.detail }).then((res) => {
+          createVideo({ video: this.video, detail: this.detail }).then((res) => {
             const video_error = res.error['video_error']
             const detail_error = res.error['detail_error']
-            const video_data = res.error['video_data']
-            const detail_data = res.error['detail_data']
+            // const video_data = res.error['video_data']
+            // const detail_data = res.error['detail_data']
             if (res.code !== 20000) {
-              if (video_error !== ''){
+              if (video_error !== '') {
                 for (const key in video_error) {
                   video_error[key] = video_error[key][0]
                 }
@@ -379,3 +362,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  #selectForm >>> .el-form-item__label {
+    font-size: 16px;
+  }
+</style>

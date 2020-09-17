@@ -14,25 +14,6 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-plus"
-        @click="handleCreate"
-      >
-        Add
-      </el-button>
-      <el-button
-        v-waves
-        :loading="downloadLoading"
-        class="filter-item"
-        type="primary"
-        icon="el-icon-download"
-        @click="handleDownload"
-      >
-        Export
-      </el-button>
     </div>
 
     <el-table
@@ -66,7 +47,7 @@
 
       <el-table-column label="出版日期" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.ctime | parseTime('{y}-{m}-{d}') }}</span>
+          <span>{{ row.release_date }}</span>
         </template>
       </el-table-column>
 
@@ -95,12 +76,9 @@
       </el-table-column>
 
       <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
-        <template slot-scope="{row,$index}">
+        <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             Edit
-          </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row,$index)">
-            Delete
           </el-button>
         </template>
       </el-table-column>
@@ -115,7 +93,7 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog title="编辑" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -124,7 +102,7 @@
         label-width="80px"
         style="width: 400px; margin-left:50px;"
       >
-        <el-form-item label="番号" prop="video" :error="error.video" >
+        <el-form-item label="番号" prop="video">
           <el-select
             v-model="temp.video"
             filterable
@@ -133,7 +111,7 @@
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
             :loading="loading"
-            :disabled="dialogStatus==='update'"
+            disabled
           >
             <el-option
               v-for="item in options"
@@ -143,7 +121,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="演员" prop="actors" :error="error.actors">
+        <el-form-item label="演员" prop="actors">
           <el-select
             v-model="temp.actors"
             filterable
@@ -153,7 +131,6 @@
             placeholder="请输入关键词"
             :remote-method="remoteMethodActor"
             :loading="loading"
-            :disabled="dialogStatus==='update'"
           >
             <el-option
               v-for="item in options2"
@@ -172,34 +149,18 @@
         <el-form-item label="大小" prop="size">
           <el-input v-model.number="temp.size" />
         </el-form-item>
-        <el-form-item label="出版日" prop="release_date" :error="error.release_date">
+        <el-form-item label="出版日" prop="release_date">
           <el-date-picker v-model="temp.release_date" placeholder="Please pick a date" value-format="yyyy-MM-dd" />
         </el-form-item>
-        <el-form-item label="系列" prop="series" :error="error.series">
-          <el-input v-model="temp.series" type="textarea" />
-        </el-form-item>
-
-        <el-form-item v-if="dialogStatus==='create'" ref="imgItem" label="大封面" prop="bImg">
-          <el-upload
-            ref="upload"
-            class="upload-demo"
-            action="http://127.0.0.1:8001/back/bimg/"
-            :on-success="handleSuccess"
-            :limit="1"
-            :before-upload="beforeUpload"
-            :on-remove="handleRemove"
-            :on-exceed="handleExceed"
-          >
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg文件，且不超过2M</div>
-          </el-upload>
+        <el-form-item label="系列" prop="series">
+          <el-input v-model="temp.series" type="textarea" disabled />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           Cancel
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <el-button type="primary" @click="updateData()">
           Confirm
         </el-button>
       </div>
@@ -209,32 +170,33 @@
 </template>
 
 <script>
-import { fetchList, getFh, updateVideoDetail, deleteVideoDetail, getActor, createVideoDetail } from '@/api/video-detail'
+import { fetchList, getFh, updateVideoDetail, deleteVideoDetail, getActor } from '@/api/video-detail'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
   name: 'VideoDetail',
   components: { Pagination },
   directives: { waves },
-
   filters: {
     sizeTransfer(value) {
       return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
     }
   },
-
   data() {
     return {
+      // 番号选项
       options: [],
+      // 演员选项
       options2: [],
+      // 控制番号，演员选项框的loading
       loading: false,
       error: {},
       poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
       tableKey: 0,
       list: null,
       total: 0,
+      // 控制整个表格的loading
       listLoading: true,
       listQuery: {
         page: 1,
@@ -244,73 +206,56 @@ export default {
         isReverse: false
       },
       sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
-      temp: {
-        bimg: null,
-        director: null,
-        maker: null,
-        size: null,
-        release_date: null,
-        series: null,
-        video: null,
-        actors: []
-      },
+      temp: {},
       dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: 'Edit',
-        create: 'Create'
-      },
       rules: {
-        video: [{ required: true, message: 'fh is required', trigger: ['blur', 'change'] }],
-        // actors: [{ required: true, message: 'actors is required', trigger: ['blur', 'change'] }],
         size: [
           { required: true, message: 'size is required', trigger: 'blur' },
           { type: 'number', message: '必须是数字' },
           { type: 'number', min: 0, message: '不能小于0' }
         ],
-        release_date: [{ required: true, message: 'date is required', trigger: 'change' }],
         maker: [{ required: true, message: 'maker is required', trigger: 'blur' }],
-        avers: [{ required: true, message: 'avers is required', trigger: 'blur' }],
-        url: [{ required: true, message: 'url is required', trigger: 'blur' }],
-        bImg: [{ required: true, message: 'bImg is required', trigger: 'change' }]
-      },
-      downloadLoading: false
+        release_date: [{ required: true, message: 'date is required', trigger: 'blur' }]
+      }
     }
   },
 
   created() {
     this.getList()
+    this.resetTemp()
   },
 
   methods: {
+    // 获取番号信息
     remoteMethod(query) {
       if (query !== '') {
         this.loading = true
         getFh({ fh: query }).then(res => {
           this.options = res.data
-
           this.$nextTick(() => {
             this.loading = false
           })
         }).catch(() => {
+          this.loading = false
         })
       } else {
         this.options = []
       }
     },
+    // 获取演员信息
     remoteMethodActor(query) {
       if (query !== '') {
         this.loading = true
         getActor({ name: query }).then(res => {
           this.options2 = res.data
-
           this.$nextTick(() => {
             this.loading = false
           })
         }).catch(() => {
+          this.loading = false
         })
       } else {
-        this.options = []
+        this.options2 = []
       }
     },
     getIndex(row) {
@@ -318,15 +263,15 @@ export default {
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data
-        this.total = response.count
+      fetchList(this.listQuery).then(res => {
+        this.list = res.data
+        this.total = res.count
         // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
-        }, 1000)
-      }).catch(e => {
-        console.log(e)
+        }, 500)
+      }).catch(() => {
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -356,39 +301,6 @@ export default {
         actors: []
       }
     },
-    handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-        this.$refs['upload'].clearFiles()
-      })
-    },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          createVideoDetail(this.temp).then((res) => {
-            if (res.code !== 20000) {
-              for (const key in res.error) {
-                res.error[key] = res.error[key][0]
-              }
-              this.error = res.error
-            } else {
-              this.list.unshift(res.data)
-              this.total++
-              this.dialogFormVisible = false
-              this.$notify({
-                title: 'Success',
-                message: 'Created Successfully',
-                type: 'success',
-                duration: 2000
-              })
-            }
-          })
-        }
-      })
-    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.size = parseInt(this.temp.size)
@@ -404,7 +316,6 @@ export default {
           this.options2.push({ label: val.name, value: val.id })
         })
       }
-      this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -423,7 +334,6 @@ export default {
             } else {
               const index = this.list.findIndex(v => v.id === this.temp.id)
               this.list.splice(index, 1, res.data)
-
               this.dialogFormVisible = false
               this.$notify({
                 title: 'Success',
@@ -436,81 +346,9 @@ export default {
         }
       })
     },
-    handleDelete(row, index) {
-      this.$confirm(`确定移除 ${row.fh} ？`).then(() => {
-        deleteVideoDetail(row).then((res) => {
-          if (res.code !== 20000) {
-            this.$notify({
-              title: 'Fail',
-              message: 'Delete Fail',
-              type: 'warning',
-              duration: 2000
-            })
-          } else {
-            this.list.splice(index, 1)
-            this.total--
-            this.$notify({
-              title: 'Success',
-              message: 'Delete Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          }
-        })
-      }).catch(() => {
-      })
-    },
-
-    handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['fh', 'title', 'avers', 'genre', 'plays']
-        const filterVal = ['fh', 'title', 'avers', 'genre', 'plays']
-        const data = this.formatJson(filterVal)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'video-list'
-        })
-        this.downloadLoading = false
-      })
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
-    },
     getSortClass: function(key) {
       const sort = this.listQuery.isReverse
       return sort === false ? 'ascending' : 'descending'
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(`当前限制选择 1 个文件`)
-    },
-    beforeUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return isJPG && isLt2M
-    },
-    handleRemove(file, fileList) {
-      this.temp.bimg = null
-      this.rules.bImg[0]['required'] = true
-      this.$refs.imgItem.clearValidate()
-    },
-    handleSuccess(res, file, fileList) {
-      this.temp.bimg = file.name
-      this.rules.bImg[0]['required'] = false
-      this.$refs.imgItem.clearValidate()
     }
   }
 }

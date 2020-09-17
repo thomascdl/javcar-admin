@@ -23,16 +23,6 @@
       >
         Add
       </el-button>
-      <el-button
-        v-waves
-        :loading="downloadLoading"
-        class="filter-item"
-        type="primary"
-        icon="el-icon-download"
-        @click="handleDownload"
-      >
-        Export
-      </el-button>
     </div>
 
     <el-table
@@ -145,7 +135,6 @@
         </el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
 
@@ -153,23 +142,14 @@
 import { fetchList, updateActor, deleteActor, createActor } from '@/api/actor'
 import { uploadActorImg } from '@/api/actorimg'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
   name: 'Actor',
   components: { Pagination },
   directives: { waves },
-
-  filters: {
-    sizeTransfer(value) {
-      return (value / 1024 / 1024 / 1024).toFixed(2) + 'G'
-    }
-  },
-
   data() {
     return {
-      loading: false,
       error: {},
       tableKey: 0,
       list: null,
@@ -183,11 +163,7 @@ export default {
         isReverse: false
       },
       sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
-      temp: {
-        name: null,
-        img: null,
-        isCensored: null
-      },
+      temp: {},
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
@@ -196,16 +172,14 @@ export default {
       },
       rules: {
         name: [{ required: true, message: 'name is required', trigger: 'blur' }]
-        // img: [{ required: true, message: 'img is required', trigger: 'change' }]
       },
       downloadLoading: false
     }
   },
-
   created() {
     this.getList()
+    this.resetTemp()
   },
-
   methods: {
     toArray(data) {
       return [data]
@@ -224,8 +198,9 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
-        }, 1000)
+        }, 500)
       }).catch(e => {
+        this.listLoading = false
         console.log(e)
       })
     },
@@ -264,10 +239,12 @@ export default {
         if (valid) {
           createActor(this.temp).then((res) => {
             if (res.code !== 20000) {
-              for (const key in res.error) {
-                res.error[key] = res.error[key][0]
-              }
-              this.error = res.error
+              this.$notify({
+                title: 'Fail',
+                message: res.error,
+                type: 'warning',
+                duration: 3000
+              })
             } else {
               this.list.push(res.data)
               this.total++
@@ -297,10 +274,12 @@ export default {
           const tempData = Object.assign({}, this.temp)
           updateActor(tempData).then((res) => {
             if (res.code !== 20000) {
-              for (const key in res.error) {
-                res.error[key] = res.error[key][0]
-              }
-              this.error = res.error
+              this.$notify({
+                title: 'Fail',
+                message: res.error,
+                type: 'warning',
+                duration: 3000
+              })
             } else {
               const index = this.list.findIndex(v => v.id === this.temp.id)
               this.list.splice(index, 1, this.temp)
@@ -340,30 +319,6 @@ export default {
       }).catch(() => {
       })
     },
-
-    handleDownload() {
-      this.downloadLoading = true
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['fh', 'title', 'avers', 'genre', 'plays']
-          const filterVal = ['fh', 'title', 'avers', 'genre', 'plays']
-          const data = this.formatJson(filterVal)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: 'video-list'
-          })
-          this.downloadLoading = false
-        })
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
-    },
     getSortClass: function(key) {
       const sort = this.listQuery.isReverse
       return sort === false ? 'ascending' : 'descending'
@@ -384,8 +339,6 @@ export default {
     },
     handleRemove(file, fileList) {
       this.temp.img = null
-      // this.rules.img[0]['required'] = true
-      // this.$refs.imgItem.clearValidate()
     },
     uploadSectionFile(params) {
       const file = params.file
@@ -400,7 +353,7 @@ export default {
               title: 'Fail',
               message: res.error,
               type: 'warning',
-              duration: 5000
+              duration: 3000
             })
             params.onError()
           } else {
@@ -408,13 +361,11 @@ export default {
               title: 'Success',
               message: 'Upload Successfully',
               type: 'success',
-              duration: 3000
+              duration: 2000
             })
             params.onSuccess()
           }
-        })
-        .catch(() => {
-        })
+        }).catch(() => {})
     },
     handleSuccess(res, file, fileList) {
       this.temp.img = file.name

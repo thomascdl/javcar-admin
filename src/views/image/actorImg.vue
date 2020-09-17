@@ -1,6 +1,7 @@
 <template>
   <div class="my-container">
     <VmImageList
+      title="Actor Img List"
       img-style="height:125px;width:125px"
       control-style="right: 16px; button: -16px"
       :data="list"
@@ -12,8 +13,7 @@
     />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-
-        <el-form-item ref="imgItem" label="小封面" prop="sImg">
+        <el-form-item ref="imgItem" label="演员头像">
           <el-upload
             ref="upload"
             class="upload-demo"
@@ -26,12 +26,10 @@
           >
             <el-button slot="trigger" size="small" type="primary">点击上传</el-button>
             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            <div slot="tip" class="el-upload__tip">只能上传jpg文件，且不超过2M</div>
           </el-upload>
         </el-form-item>
-
       </el-form>
-
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleClear">
           清空
@@ -49,7 +47,7 @@ import VmImageList from '@/components/Imglist/vm-image-list'
 import { getActorImg, uploadActorImg, deleteActorImg } from '@/api/actorimg'
 
 export default {
-  name: 'ImageList',
+  name: 'ActorImageList',
   components: {
     VmImageList
   },
@@ -85,7 +83,7 @@ export default {
               title: 'Fail',
               message: res.error,
               type: 'warning',
-              duration: 5000
+              duration: 3000
             })
             params.onError()
           } else {
@@ -95,13 +93,12 @@ export default {
               title: 'Success',
               message: 'Upload Successfully',
               type: 'success',
-              duration: 3000
+              duration: 2000
             })
             params.onSuccess()
           }
         })
-        .catch(() => {
-        })
+        .catch(() => {})
     },
     beforeUpload(file) {
       const isJPG = file.type === 'image/jpeg'
@@ -139,24 +136,20 @@ export default {
             title: 'Fail',
             message: 'Delete Fail',
             type: 'warning',
-            duration: 5000
+            duration: 3000
           })
         } else {
-          for (let i = 0; i < this.list.length; i++) {
-            if (this.list[i].id === data.id) {
-              this.list.splice(i, 1)
-            }
-          }
+          const index = this.list.findIndex(v => v.id === data.id)
+          this.list.splice(index, 1)
           this.total--
           this.$notify({
             title: 'Success',
             message: 'Delete Successfully',
             type: 'success',
-            duration: 3000
+            duration: 2000
           })
         }
-      }).catch(() => {
-      })
+      }).catch(() => {})
     }
   }
 }

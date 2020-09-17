@@ -14,7 +14,7 @@ const imageRouter = {
   children: [
     {
       path: 'simg',
-      component: () => import('@/views/image/imgList'),
+      component: () => import('@/views/image/sImg'),
       name: 'sImgTable',
       meta: {title: '小图管理'}
     },

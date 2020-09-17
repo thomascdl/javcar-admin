@@ -2,28 +2,22 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-
       <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
-
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
         Add
       </el-button>
-
       <el-button v-if="multipleSelection.length !== 0" class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="handleMultiDelete">
         批量删除
       </el-button>
-
       <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="changeCheckStatus">
         批量操作
       </el-checkbox>
     </div>
-
     <el-table
       ref="tableData"
       :key="tableKey"
@@ -35,6 +29,7 @@
       style="width: 100%;"
       @selection-change="handleSelectionChange"
       @cell-click="handleCellClick"
+      @sort-change="sortChange"
     >
       <el-table-column
         v-if="showReviewer"
@@ -42,19 +37,23 @@
         type="selection"
         width="40"
       />
-
-      <el-table-column label="ID" prop="id" align="center" width="80">
+      <el-table-column
+        label="ID"
+        prop="id"
+        align="center"
+        width="60"
+        sortable="custom"
+        :class-name="getSortClass('id')"
+      >
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
         </template>
       </el-table-column>
-
       <el-table-column label="番号" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-
       <el-table-column label="图片" align="center" width="220">
         <template slot-scope="{row}">
           <el-image
@@ -64,7 +63,6 @@
           />
         </template>
       </el-table-column>
-
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button size="mini" type="danger" @click="handleDelete(row,$index)">
@@ -72,15 +70,11 @@
           </el-button>
         </template>
       </el-table-column>
-
     </el-table>
-
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-
-        <el-form-item ref="imgItem" label="大封面" prop="bImg">
+        <el-form-item ref="imgItem" label="大封面">
           <el-upload
             ref="upload"
             class="upload-demo"
@@ -97,9 +91,7 @@
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
         </el-form-item>
-
       </el-form>
-
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleClear">
           清空
@@ -109,7 +101,6 @@
         </el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
 
@@ -123,7 +114,6 @@ export default {
   name: 'VideoTable',
   components: { Pagination },
   directives: { waves },
-
   data() {
     return {
       showReviewer: false,
@@ -141,17 +131,28 @@ export default {
       },
       sortOptions: [{ label: 'ID Ascending', key: false }, { label: 'ID Descending', key: true }],
       dialogFormVisible: false,
-      downloadLoading: false,
       multipleSelection: [],
       deleteIndexList: []
     }
   },
-
   created() {
     this.getList()
   },
-
   methods: {
+    sortChange(data) {
+      const { prop, order } = data
+      if (prop === 'id') {
+        this.sortByID(order)
+      }
+    },
+    sortByID(order) {
+      this.listQuery.isReverse = order === 'descending'
+      this.handleFilter()
+    },
+    getSortClass: function(key) {
+      const sort = this.listQuery.isReverse
+      return sort === false ? 'ascending' : 'descending'
+    },
     handleCellClick(row, column) {
       if ((column.label === 'ID' || column.type === 'selection') && this.showReviewer) {
         this.$refs.tableData.toggleRowSelection(row)
@@ -170,14 +171,14 @@ export default {
                 title: 'Fail',
                 message: 'Delete Fail',
                 type: 'warning',
-                duration: 5000
+                duration: 3000
               })
             } else {
               this.$notify({
                 title: 'Success',
                 message: 'Delete Successfully',
                 type: 'success',
-                duration: 3000
+                duration: 2000
               })
               this.getList()
             }
@@ -187,15 +188,15 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
-      this.deleteIndexList = []
-      val.forEach((val, index) => {
-        this.list.forEach((v, i) => {
-          // id 是每一行的数据id
-          if (val.id === v.id) {
-            this.deleteIndexList.push(i)
-          }
-        })
-      })
+      // this.deleteIndexList = []
+      // val.forEach((val, index) => {
+      //   this.list.forEach((v, i) => {
+      //     // id 是每一行的数据id
+      //     if (val.id === v.id) {
+      //       this.deleteIndexList.push(i)
+      //     }
+      //   })
+      // })
     },
     toArray(data) {
       return [data]
@@ -213,15 +214,14 @@ export default {
           this.listLoading = false
         }, 1000)
       }).catch(e => {
+        this.listLoading = false
         console.log(e)
       })
     },
-
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
     },
-
     handleCreate() {
       this.dialogFormVisible = true
     },
@@ -254,7 +254,7 @@ export default {
               title: 'Fail',
               message: 'Delete Fail',
               type: 'warning',
-              duration: 5000
+              duration: 3000
             })
           } else {
             this.list.splice(index, 1)
@@ -263,20 +263,11 @@ export default {
               title: 'Success',
               message: 'Delete Successfully',
               type: 'success',
-              duration: 3000
+              duration: 2000
             })
           }
         })
       }).catch(() => {})
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
     },
     beforeUpload(file) {
       const isJPG = file.type === 'image/jpeg'
@@ -289,11 +280,9 @@ export default {
       }
       return isJPG && isLt2M
     },
-
     submitUpload() {
       this.$refs.upload.submit()
     },
-
     handleClear() {
       this.$refs['upload'].clearFiles()
     },
@@ -314,22 +303,21 @@ export default {
               title: 'Fail',
               message: res.error,
               type: 'warning',
-              duration: 5000
+              duration: 3000
             })
             params.onError()
           } else {
-            this.list.push(res.data)
             this.total++
             this.$notify({
               title: 'Success',
               message: 'Upload Successfully',
               type: 'success',
-              duration: 3000
+              duration: 2000
             })
             params.onSuccess()
+            this.getList()
           }
-        })
-        .catch(() => {})
+        }).catch(() => {})
     }
   }
 }

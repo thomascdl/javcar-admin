@@ -165,8 +165,7 @@ export default {
       dialogFormVisible: false,
       rules: {
         url: [{ required: true, message: 'url is required', trigger: 'blur' }]
-      },
-      downloadLoading: false
+      }
     }
   },
   created() {
