@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
+      <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="sortChangeBySelect">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
@@ -19,7 +19,7 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="60" :class-name="getSortClass('id')">
+      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="60" :class-name="sortBy">
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
         </template>
@@ -147,6 +147,7 @@ export default {
   },
   data() {
     return {
+      sortBy: null,
       error: {},
       poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
       tableKey: 0,
@@ -195,12 +196,20 @@ export default {
         console.log(e)
       })
     },
+    sortChangeBySelect() {
+      // this.sortBy = null
+      this.sortBy = this.listQuery.isReverse === false ? 'ascending' : 'descending'
+      this.handleFilter()
+    },
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
     },
     sortChange(data) {
       const { prop, order } = data
+      // console.log(order)
+      this.sortBy = order
+      // console.log(order);
       if (prop === 'id') {
         this.sortByID(order)
       }
@@ -315,11 +324,10 @@ export default {
           }
         })
       })
-    },
-    getSortClass: function(key) {
-      const sort = this.listQuery.isReverse
-      return sort === false ? 'ascending' : 'descending'
     }
+    // getSortClass() {
+    //   return this.sortBy
+    // }
   }
 }
 </script>

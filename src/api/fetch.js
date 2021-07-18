@@ -21,6 +21,7 @@ export function getImgOrActor(query) {
   return request({
     url: '/back/video/getImgOrActor/',
     method: 'get',
+    timeout: 10000,
     params: query
   })
 }

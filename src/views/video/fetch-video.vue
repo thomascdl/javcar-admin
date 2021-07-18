@@ -6,11 +6,28 @@
       <el-step title="获取影片详情" />
     </el-steps>
     <div v-if="active === 0">
-      <div class="filter-container" style="margin: 0 auto;width:315px;">
-        <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <div class="filter-container" style="margin: 0 auto;width:450px;height:78px">
+        <el-input
+          v-model="listQuery.fh"
+          placeholder="Search"
+          style="width: 200px;margin-left: 40px"
+          class="filter-item"
+          clearable
+          @keyup.enter.native="handleFilter"
+          @focus="clearInput"
+          @blur="clearInput"
+          @input="clearInput"
+          @clear="clearInput"
+        />
         <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
           Fetch
         </el-button>
+        <el-button v-waves class="filter-item" type="warning" @click="resetVideo">
+          Clear
+        </el-button>
+        <transition name="el-zoom-in-top">
+          <p style="color: red;margin-left: 50px">{{ tips }}</p>
+        </transition>
       </div>
       <el-form ref="dataForm" v-loading="listLoading" :rules="rules" :model="video" label-position="right" label-width="80px" style="width: 500px; margin:0 auto;">
         <el-form-item label="番号" :error="error.fh" prop="fh">
@@ -118,13 +135,14 @@ export default {
   directives: { waves },
   data() {
     return {
+      tips: '',
       checkInfo: {},
       active: 0,
       error: {},
       poMap: { '1': 'seagate_cdl', '2': 'seagate_zxh', '3': 'west_data_1T', '4': 'west_data_500g' },
       listLoading: false,
       listQuery: {
-        fh: undefined
+        fh: ''
       },
       video: {},
       detail: {},
@@ -155,6 +173,9 @@ export default {
     this.resetDetail()
   },
   methods: {
+    clearInput() {
+      this.tips = ''
+    },
     getLabel(key) {
       if (key === 'simg') {
         return '小图'
@@ -179,7 +200,7 @@ export default {
         } else {
           this.$notify({
             title: 'Fail',
-            message: 'Check Fail',
+            message: 'Fail!',
             type: 'warning',
             duration: 3000
           })
@@ -271,6 +292,14 @@ export default {
       })
     },
     getVideoInfo() {
+      const text = this.listQuery.fh
+      const pattern = '[a-zA-Z0-9]{2,10}[-_][0-9]{3,10}'
+      if (!text.match(pattern)) {
+        this.tips = '输入格式有误！'
+        return
+      } else {
+        this.tips = ''
+      }
       this.resetVideo()
       this.listLoading = true
       fetchVideo(this.listQuery).then(response => {
@@ -290,7 +319,6 @@ export default {
         }, 500)
       }).catch(e => {
         this.listLoading = false
-        console.log(e)
       })
     },
     handleFilter() {

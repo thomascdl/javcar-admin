@@ -8,7 +8,7 @@
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
-      <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
+      <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="sortChangeBySelect">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
@@ -32,7 +32,7 @@
         sortable="custom"
         align="center"
         width="60"
-        :class-name="getSortClass('id')"
+        :class-name="getSortClass()"
       >
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
@@ -185,6 +185,7 @@ export default {
   },
   data() {
     return {
+      sortBy: null,
       // 番号选项
       options: [],
       // 演员选项
@@ -274,12 +275,17 @@ export default {
         this.listLoading = false
       })
     },
+    sortChangeBySelect() {
+      this.sortBy = this.listQuery.isReverse === false ? 'ascending' : 'descending'
+      this.handleFilter()
+    },
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
     },
     sortChange(data) {
       const { prop, order } = data
+      this.sortBy = order
       if (prop === 'id') {
         this.sortByID(order)
       }
@@ -346,9 +352,8 @@ export default {
         }
       })
     },
-    getSortClass: function(key) {
-      const sort = this.listQuery.isReverse
-      return sort === false ? 'ascending' : 'descending'
+    getSortClass() {
+      return this.sortBy
     }
   }
 }

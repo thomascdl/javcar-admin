@@ -41,7 +41,7 @@
         sortable="custom"
         align="center"
         width="60"
-        :class-name="getSortClass('id')"
+        :class-name="getSortClass"
       >
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
@@ -150,6 +150,7 @@ export default {
   directives: { waves },
   data() {
     return {
+      sortBy: null,
       error: {},
       tableKey: 0,
       list: null,
@@ -210,6 +211,7 @@ export default {
     },
     sortChange(data) {
       const { prop, order } = data
+      this.sortBy = order
       if (prop === 'id') {
         this.sortByID(order)
       }
@@ -320,8 +322,11 @@ export default {
       })
     },
     getSortClass: function(key) {
-      const sort = this.listQuery.isReverse
-      return sort === false ? 'ascending' : 'descending'
+      // const sort = this.listQuery.isReverse
+      if ( this.sortBy === null){
+        return null
+      }
+      return this.sortBy === false ? 'ascending' : 'descending'
     },
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 1 个文件`)
