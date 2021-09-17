@@ -25,6 +25,15 @@
       </el-button>
     </div>
 
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      class="my-page"
+      @pagination="getList"
+    />
+
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -41,7 +50,7 @@
         sortable="custom"
         align="center"
         width="60"
-        :class-name="getSortClass"
+        :class-name="getSortClass()"
       >
         <template slot-scope="row">
           <span>{{ getIndex(row) }}</span>
@@ -85,7 +94,7 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :before-close="handleClose">
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -94,7 +103,6 @@
         label-width="70px"
         style="width: 400px; margin-left:50px;"
       >
-
         <el-form-item label="名字" prop="name">
           <el-input v-model="temp.name" :disabled="dialogStatus==='update'" />
         </el-form-item>
@@ -114,20 +122,20 @@
             ref="upload"
             class="upload-demo"
             action="fakeAction"
-            :on-success="handleSuccess"
             :limit="1"
+            :on-success="handleSuccess"
             :before-upload="beforeUpload"
             :on-remove="handleRemove"
             :on-exceed="handleExceed"
             :http-request="uploadSectionFile"
           >
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg文件，且不超过2M</div>
+            <div slot="tip" class="el-upload__tip">只能上传 jpg,gif,png 文件，且不超过4M</div>
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
+        <el-button @click="handleCancel()">
           Cancel
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
@@ -140,7 +148,7 @@
 
 <script>
 import { fetchList, updateActor, deleteActor, createActor } from '@/api/actor'
-import { uploadActorImg } from '@/api/actorimg'
+import { uploadActorImg, deleteActorImg } from '@/api/actorimg'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
@@ -174,6 +182,7 @@ export default {
       rules: {
         name: [{ required: true, message: 'name is required', trigger: 'blur' }]
       },
+      actorImgObj: null,
       downloadLoading: false
     }
   },
@@ -322,8 +331,7 @@ export default {
       })
     },
     getSortClass: function(key) {
-      // const sort = this.listQuery.isReverse
-      if ( this.sortBy === null){
+      if (this.sortBy === null) {
         return null
       }
       return this.sortBy === false ? 'ascending' : 'descending'
@@ -332,18 +340,38 @@ export default {
       this.$message.warning(`当前限制选择 1 个文件`)
     },
     beforeUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      const imgFormat = ['image/jpeg', 'image/gif', 'image/png']
+      const isImage = imgFormat.includes(file.type)
+      // console.log(file.type);
+      const isLt2M = file.size / 1024 / 1024 < 4
+      if (!isImage) {
+        this.$message.error('上传头像图片只能是 JPG,GIF,PNG 格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error('上传头像图片大小不能超过 4MB!')
       }
-      return isJPG && isLt2M
+      return isImage && isLt2M
     },
     handleRemove(file, fileList) {
+      deleteActorImg(this.actorImgObj).then(res => {
+        if (res.code !== 20000) {
+          this.$notify({
+            title: 'Fail',
+            message: 'Delete Fail',
+            type: 'warning',
+            duration: 3000
+          })
+        } else {
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+        }
+      })
       this.temp.img = null
+      this.actorImgObj = null
     },
     uploadSectionFile(params) {
       const file = params.file
@@ -356,12 +384,13 @@ export default {
           if (res.code !== 20000) {
             this.$notify({
               title: 'Fail',
-              message: res.error,
+              message: 'Upload Fail',
               type: 'warning',
               duration: 3000
             })
             params.onError()
           } else {
+            this.actorImgObj = res.data
             this.$notify({
               title: 'Success',
               message: 'Upload Successfully',
@@ -370,11 +399,39 @@ export default {
             })
             params.onSuccess()
           }
-        }).catch(() => {})
+        })
     },
-    handleSuccess(res, file, fileList) {
+    handleSuccess(res, file) {
       this.temp.img = file.name
+    },
+    handleClose(done) {
+      if (this.actorImgObj) {
+        this.$message({
+          showClose: true,
+          message: '请先删除已上传的图片',
+          type: 'warning'
+        })
+      } else {
+        done()
+      }
+    },
+    handleCancel() {
+      if (this.actorImgObj) {
+        this.$message({
+          showClose: true,
+          message: '请先删除已上传的图片',
+          type: 'warning'
+        })
+      } else {
+        this.dialogFormVisible = false
+      }
     }
   }
 }
 </script>
+
+<style scoped>
+.my-page{
+  margin: -20px 0 -5px 0;
+}
+</style>
