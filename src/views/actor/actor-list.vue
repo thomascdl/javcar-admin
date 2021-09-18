@@ -101,7 +101,7 @@
         :model="temp"
         label-position="left"
         label-width="70px"
-        style="width: 400px; margin-left:50px;"
+        style="width: 60%; margin-left:20%"
       >
         <el-form-item label="名字" prop="name">
           <el-input v-model="temp.name" :disabled="dialogStatus==='update'" />
@@ -130,7 +130,7 @@
             :http-request="uploadSectionFile"
           >
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传 jpg,gif,png 文件，且不超过4M</div>
+            <div slot="tip" class="el-upload__tip" style="color: red">仅支持 JPG / GIF / PNG 格式,且不超过4M</div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -151,7 +151,6 @@ import { fetchList, updateActor, deleteActor, createActor } from '@/api/actor'
 import { uploadActorImg, deleteActorImg } from '@/api/actorimg'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
 export default {
   name: 'Actor',
   components: { Pagination },
@@ -197,6 +196,13 @@ export default {
     getIndex(row) {
       return (this.listQuery.page - 1) * this.listQuery.limit + row.$index + 1
     },
+    resetTemp() {
+      this.temp = {
+        name: null,
+        img: null,
+        isCensored: true
+      }
+    },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
@@ -229,12 +235,11 @@ export default {
       this.listQuery.isReverse = order === 'descending'
       this.handleFilter()
     },
-    resetTemp() {
-      this.temp = {
-        name: null,
-        img: null,
-        isCensored: true
+    getSortClass() {
+      if (this.sortBy === null) {
+        return null
       }
+      return this.sortBy === false ? 'ascending' : 'descending'
     },
     handleCreate() {
       this.resetTemp()
@@ -252,7 +257,7 @@ export default {
             if (res.code !== 20000) {
               this.$notify({
                 title: 'Fail',
-                message: res.error,
+                message: 'Created Fail',
                 type: 'warning',
                 duration: 3000
               })
@@ -287,7 +292,7 @@ export default {
             if (res.code !== 20000) {
               this.$notify({
                 title: 'Fail',
-                message: res.error,
+                message: 'Update Fail',
                 type: 'warning',
                 duration: 3000
               })
@@ -327,16 +332,9 @@ export default {
             })
           }
         })
-      }).catch(() => {
       })
     },
-    getSortClass: function(key) {
-      if (this.sortBy === null) {
-        return null
-      }
-      return this.sortBy === false ? 'ascending' : 'descending'
-    },
-    handleExceed(files, fileList) {
+    handleExceed() {
       this.$message.warning(`当前限制选择 1 个文件`)
     },
     beforeUpload(file) {
@@ -351,27 +349,6 @@ export default {
         this.$message.error('上传头像图片大小不能超过 4MB!')
       }
       return isImage && isLt2M
-    },
-    handleRemove(file, fileList) {
-      deleteActorImg(this.actorImgObj).then(res => {
-        if (res.code !== 20000) {
-          this.$notify({
-            title: 'Fail',
-            message: 'Delete Fail',
-            type: 'warning',
-            duration: 3000
-          })
-        } else {
-          this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      })
-      this.temp.img = null
-      this.actorImgObj = null
     },
     uploadSectionFile(params) {
       const file = params.file
@@ -400,6 +377,27 @@ export default {
             params.onSuccess()
           }
         })
+    },
+    handleRemove() {
+      deleteActorImg(this.actorImgObj).then(res => {
+        if (res.code !== 20000) {
+          this.$notify({
+            title: 'Fail',
+            message: 'Delete Fail',
+            type: 'warning',
+            duration: 3000
+          })
+        } else {
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+        }
+      })
+      this.temp.img = null
+      this.actorImgObj = null
     },
     handleSuccess(res, file) {
       this.temp.img = file.name
