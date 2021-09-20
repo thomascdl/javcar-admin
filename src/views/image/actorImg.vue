@@ -1,16 +1,17 @@
 <template>
-  <div class="my-container">
-    <VmImageList
-      title="Actor Img List"
-      img-style="height:125px;width:125px"
-      control-style="right: 16px; button: -16px"
-      :data="list"
-      :total="total"
-      class="vm-margin"
-      @get-data="getList"
-      @create="handleCreate"
-      @delete-ok="deleteImg"
-    />
+  <div class="app-container">
+    <div class="filter-container">
+      <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        Search
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+        Add
+      </el-button>
+    </div>
+    <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <MyImgList :img-list="list" :total="total" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" />
+    <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item ref="imgItem" label="演员头像">
@@ -43,19 +44,24 @@
 </template>
 
 <script>
-import VmImageList from '@/components/Imglist/vm-image-list'
+import waves from '@/directive/waves' // waves directive
+import MyImgList from '@/components/Imglist/MyImgList'
 import { getActorImg, uploadActorImg, deleteActorImg } from '@/api/actorimg'
-
+import Pagination from '@/components/Pagination'
 export default {
   name: 'ActorImageList',
+  directives: { waves },
   components: {
-    VmImageList
+    MyImgList,
+    Pagination
   },
   data: function() {
     return {
+      imgSize: 'width: 125px; height: 125px',
       dialogFormVisible: false,
       list: [],
-      total: null,
+      total: 0,
+      listLoading: true,
       listQuery: {
         page: 1,
         limit: 24,
@@ -64,7 +70,7 @@ export default {
     }
   },
   created() {
-    this.getList(this.listQuery)
+    this.getList()
   },
   methods: {
     handleCreate() {
@@ -121,12 +127,21 @@ export default {
     handleClear() {
       this.$refs['upload'].clearFiles()
     },
-    getList(data) {
-      getActorImg(data).then(response => {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    getList() {
+      this.listLoading = true
+      getActorImg(this.listQuery).then(response => {
         this.list = response.data
         this.total = response.count
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1000)
       }).catch(e => {
-        console.log(e)
+        this.listLoading = false
       })
     },
     deleteImg(data) {
@@ -154,4 +169,8 @@ export default {
   }
 }
 </script>
-
+<style scoped>
+.my-page{
+  margin: -20px 0 -5px 0;
+}
+</style>

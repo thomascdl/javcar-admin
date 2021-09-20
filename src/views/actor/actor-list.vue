@@ -68,7 +68,7 @@
           <el-image
             style="width: 100px; height: 100px"
             :src="row.img"
-            :preview-src-list="toArray(row.img)"
+            @click.native="fixBug()"
           />
         </template>
       </el-table-column>
@@ -190,6 +190,9 @@ export default {
     this.resetTemp()
   },
   methods: {
+    fixBug() {
+      document.body.style.overflow = ''
+    },
     toArray(data) {
       return [data]
     },
