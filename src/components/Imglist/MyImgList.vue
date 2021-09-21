@@ -7,6 +7,7 @@
       :title="item.name"
       :img-style="imgStyle"
       :margin-style="marginStyle"
+      @changeStatus="resetStatus(item)"
     />
     <p /><p /><p /><p /><p /><p /><p /><p /><p /><p />
   </div>
@@ -29,14 +30,11 @@ export default {
     marginStyle: {
       type: String,
       default: ''
-    },
-    title: {
-      type: String,
-      default: 'Title'
-    },
-    total: {
-      type: Number,
-      default: 0
+    }
+  },
+  methods: {
+    resetStatus(item) {
+      this.$emit('changeSelectList', item)
     }
   }
 }

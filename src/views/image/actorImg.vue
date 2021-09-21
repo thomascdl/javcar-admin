@@ -8,9 +8,15 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
         Add
       </el-button>
+      <el-button v-if="selectedItem.length !== 0" class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="handleMultiDelete">
+        批量删除
+      </el-button>
+      <el-checkbox class="filter-item" style="margin-left:15px;" @change="changeCheckStatus">
+        批量操作
+      </el-checkbox>
     </div>
     <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-    <MyImgList :img-list="list" :total="total" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" />
+    <MyImgList :img-list="list" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" @changeSelectList="changeSelectList" />
     <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -27,7 +33,7 @@
           >
             <el-button slot="trigger" size="small" type="primary">点击上传</el-button>
             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg文件，且不超过2M</div>
+            <div slot="tip" class="el-upload__tip" style="color: red">仅支持 JPG / GIF / PNG 格式,且不超过4M</div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -57,6 +63,8 @@ export default {
   },
   data: function() {
     return {
+      showReviewer: false,
+      selectedItem: [],
       imgSize: 'width: 125px; height: 125px',
       dialogFormVisible: false,
       list: [],
@@ -64,7 +72,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 24,
+        limit: 20,
         fh: undefined
       }
     }
@@ -73,6 +81,42 @@ export default {
     this.getList()
   },
   methods: {
+    changeCheckStatus() {
+      this.selectedItem = []
+      this.$store.state.canSelect = !this.$store.state.canSelect
+    },
+    handleMultiDelete() {
+      this.$confirm(`确定移除？`).then(() => {
+        this.selectedItem.forEach((val) => {
+          deleteActorImg(val).then((res) => {
+            if (res.code !== 20000) {
+              this.$notify({
+                title: 'Fail',
+                message: 'Delete Fail',
+                type: 'warning',
+                duration: 3000
+              })
+            } else {
+              this.$notify({
+                title: 'Success',
+                message: 'Delete Successfully',
+                type: 'success',
+                duration: 2000
+              })
+              this.getList()
+            }
+          }).catch(() => {})
+        })
+      })
+    },
+    changeSelectList(item) {
+      const index = this.selectedItem.findIndex(v => v.id === item.id)
+      if (index !== -1) {
+        this.selectedItem.splice(index, 1)
+      } else {
+        this.selectedItem.push(item)
+      }
+    },
     handleCreate() {
       this.dialogFormVisible = true
     },
@@ -107,15 +151,17 @@ export default {
         .catch(() => {})
     },
     beforeUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      const imgFormat = ['image/jpeg', 'image/gif', 'image/png']
+      const isImage = imgFormat.includes(file.type)
+      // console.log(file.type);
+      const isLt2M = file.size / 1024 / 1024 < 4
+      if (!isImage) {
+        this.$message.error('上传头像图片只能是 JPG,GIF,PNG 格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error('上传头像图片大小不能超过 4MB!')
       }
-      return isJPG && isLt2M
+      return isImage && isLt2M
     },
     submitUpload() {
       this.$refs.upload.submit()
@@ -140,32 +186,32 @@ export default {
         setTimeout(() => {
           this.listLoading = false
         }, 1000)
-      }).catch(e => {
+      }).catch(() => {
         this.listLoading = false
       })
-    },
-    deleteImg(data) {
-      deleteActorImg(data).then((res) => {
-        if (res.code !== 20000) {
-          this.$notify({
-            title: 'Fail',
-            message: 'Delete Fail',
-            type: 'warning',
-            duration: 3000
-          })
-        } else {
-          const index = this.list.findIndex(v => v.id === data.id)
-          this.list.splice(index, 1)
-          this.total--
-          this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      }).catch(() => {})
     }
+    // deleteImg(data) {
+    // /*  deleteActorImg(data).then((res) => {*/
+    // /*    if (res.code !== 20000) {*/
+    // /*      this.$notify({*/
+    // /*        title: 'Fail',*/
+    // /*        message: 'Delete Fail',*/
+    // /*        type: 'warning',*/
+    // /*        duration: 3000*/
+    // /*      })*/
+    // /*    } else {*/
+    // /*      const index = this.list.findIndex(v => v.id === data.id)*/
+    //       this.list.splice(index, 1)
+    //       this.total--
+    //       this.$notify({
+    //         title: 'Success',
+    //         message: 'Delete Successfully',
+    //         type: 'success',
+    //         duration: 2000
+    //       })
+    //     }
+    //   }).catch(() => {})
+    // }
   }
 }
 </script>

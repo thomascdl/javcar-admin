@@ -9,6 +9,9 @@ import permission from './modules/permission'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
+  state: {
+    canSelect: false
+  },
   modules: {
     app,
     settings,
