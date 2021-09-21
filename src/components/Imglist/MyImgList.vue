@@ -7,9 +7,10 @@
       :title="item.name"
       :img-style="imgStyle"
       :margin-style="marginStyle"
+      :text-length="textLength"
       @changeStatus="resetStatus(item)"
     />
-    <p /><p /><p /><p /><p /><p /><p /><p /><p /><p />
+    <p v-for="(item,index) in ['1','2','3','4','5','6','7']" :key="'new_'+ index" :style="imgWidth" />
   </div>
 </template>
 
@@ -19,6 +20,14 @@ export default {
   name: 'MyImgList',
   components: { MyImg },
   props: {
+    imgWidth: {
+      type: String,
+      default: 'width: 125px'
+    },
+    textLength: {
+      type: Number,
+      default: 6
+    },
     imgList: {
       type: Array,
       default: () => []
@@ -49,7 +58,6 @@ export default {
   justify-content: space-between;
 }
 .img-container p{
-  width: 125px;
   margin-right: 15px;
   margin-left: 15px;
 }

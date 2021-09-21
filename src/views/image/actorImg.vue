@@ -1,7 +1,24 @@
 <template>
   <div class="app-container">
+    <el-backtop
+      :bottom="100"
+      style="background-color: #67c23a;box-shadow: 0 0 10px rgba(0,0,0, .30);"
+    >
+      <div
+        style="{
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+      }"
+      >
+        UP
+      </div>
+    </el-backtop>
     <div class="filter-container">
-      <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.fh" placeholder="Search" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
@@ -15,9 +32,9 @@
         批量操作
       </el-checkbox>
     </div>
-    <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-    <MyImgList :img-list="list" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" @changeSelectList="changeSelectList" />
-    <pagination v-show="total>0" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :page-sizes="pageSizes" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <MyImgList :img-list="list" :img-width="imgWidth" :text-length="textLength" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" @changeSelectList="changeSelectList" />
+    <pagination v-show="total>0" :page-sizes="pageSizes" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item ref="imgItem" label="演员头像">
@@ -63,6 +80,9 @@ export default {
   },
   data: function() {
     return {
+      imgWidth: 'width: 125px',
+      textLength: 6,
+      pageSizes: [21, 28, 35, 49],
       showReviewer: false,
       selectedItem: [],
       imgSize: 'width: 125px; height: 125px',
@@ -72,7 +92,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 21,
         fh: undefined
       }
     }

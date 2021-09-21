@@ -1,17 +1,43 @@
 <template>
-  <div class="my-container">
-    <VmImageList
-      control-style="right: 9px;button: -16px"
-      :data="list"
-      :total="total"
-      class="vm-margin"
-      @get-data="getList"
-      @create="handleCreate"
-      @delete-ok="deleteImg"
-    />
+  <div class="app-container">
+    <el-backtop
+      :bottom="100"
+      style="background-color: #67c23a;box-shadow: 0 0 10px rgba(0,0,0, .30);"
+    >
+      <div
+        style="{
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+      }"
+      >
+        UP
+      </div>
+    </el-backtop>
+    <div class="filter-container">
+      <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" clearable @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        Search
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+        Add
+      </el-button>
+      <el-button v-if="selectedItem.length !== 0" class="filter-item" style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="handleMultiDelete">
+        批量删除
+      </el-button>
+      <el-checkbox class="filter-item" style="margin-left:15px;" @change="changeCheckStatus">
+        批量操作
+      </el-checkbox>
+    </div>
+    <pagination v-show="total>0" :page-sizes="pageSizes" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <MyImgList :img-list="list" :img-width="imgWidth" :text-length="textLength" :img-style="imgSize" margin-style="margin: 0 15px 25px 15px;" @changeSelectList="changeSelectList" />
+    <pagination v-show="total>0" :page-sizes="pageSizes" class="my-page" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item ref="imgItem" label="小封面">
+        <el-form-item ref="imgItem" label="演员头像">
           <el-upload
             ref="upload"
             class="upload-demo"
@@ -24,7 +50,7 @@
           >
             <el-button slot="trigger" size="small" type="primary">点击上传</el-button>
             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg文件，且不超过2M</div>
+            <div slot="tip" class="el-upload__tip" style="color: red">仅支持 JPG / GIF / PNG 格式,且不超过4M</div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -41,19 +67,29 @@
 </template>
 
 <script>
-import VmImageList from '@/components/Imglist/vm-image-list'
+import waves from '@/directive/waves' // waves directive
+import MyImgList from '@/components/Imglist/MyImgList'
 import { getsImg, uploadsImg, deletesImg } from '@/api/simg'
-
+import Pagination from '@/components/Pagination'
 export default {
   name: 'SmallImageList',
+  directives: { waves },
   components: {
-    VmImageList
+    MyImgList,
+    Pagination
   },
   data: function() {
     return {
+      imgWidth: 'width: 147px',
+      pageSizes: [24, 30, 42],
+      textLength: 12,
+      showReviewer: false,
+      selectedItem: [],
+      imgSize: 'width: 147px; height: 200px',
       dialogFormVisible: false,
       list: [],
-      total: null,
+      total: 0,
+      listLoading: true,
       listQuery: {
         page: 1,
         limit: 24,
@@ -62,9 +98,45 @@ export default {
     }
   },
   created() {
-    this.getList(this.listQuery)
+    this.getList()
   },
   methods: {
+    changeCheckStatus() {
+      this.selectedItem = []
+      this.$store.state.canSelect = !this.$store.state.canSelect
+    },
+    handleMultiDelete() {
+      this.$confirm(`确定移除？`).then(() => {
+        this.selectedItem.forEach((val) => {
+          deletesImg(val).then((res) => {
+            if (res.code !== 20000) {
+              this.$notify({
+                title: 'Fail',
+                message: 'Delete Fail',
+                type: 'warning',
+                duration: 3000
+              })
+            } else {
+              this.$notify({
+                title: 'Success',
+                message: 'Delete Successfully',
+                type: 'success',
+                duration: 2000
+              })
+              this.getList()
+            }
+          }).catch(() => {})
+        })
+      })
+    },
+    changeSelectList(item) {
+      const index = this.selectedItem.findIndex(v => v.id === item.id)
+      if (index !== -1) {
+        this.selectedItem.splice(index, 1)
+      } else {
+        this.selectedItem.push(item)
+      }
+    },
     handleCreate() {
       this.dialogFormVisible = true
     },
@@ -91,7 +163,7 @@ export default {
               title: 'Success',
               message: 'Upload Successfully',
               type: 'success',
-              duration: 3000
+              duration: 2000
             })
             params.onSuccess()
           }
@@ -99,15 +171,17 @@ export default {
         .catch(() => {})
     },
     beforeUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      const imgFormat = ['image/jpeg', 'image/gif', 'image/png']
+      const isImage = imgFormat.includes(file.type)
+      // console.log(file.type);
+      const isLt2M = file.size / 1024 / 1024 < 4
+      if (!isImage) {
+        this.$message.error('上传头像图片只能是 JPG,GIF,PNG 格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error('上传头像图片大小不能超过 4MB!')
       }
-      return isJPG && isLt2M
+      return isImage && isLt2M
     },
     submitUpload() {
       this.$refs.upload.submit()
@@ -119,42 +193,28 @@ export default {
     handleClear() {
       this.$refs['upload'].clearFiles()
     },
-    getList(data) {
-      getsImg(data).then(response => {
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    getList() {
+      this.listLoading = true
+      getsImg(this.listQuery).then(response => {
         this.list = response.data
         this.total = response.count
-      }).catch(e => {
-        console.log(e)
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1000)
+      }).catch(() => {
+        this.listLoading = false
       })
-    },
-    deleteImg(data) {
-      deletesImg(data).then((res) => {
-        if (res.code !== 20000) {
-          this.$notify({
-            title: 'Fail',
-            message: 'Delete Fail',
-            type: 'warning',
-            duration: 3000
-          })
-        } else {
-          const index = this.list.findIndex(v => v.id === data.id)
-          this.list.splice(index, 1)
-          // for (let i = 0; i < this.list.length; i++) {
-          //   if (this.list[i].id === data.id) {
-          //     this.list.splice(i, 1)
-          //   }
-          // }
-          this.total--
-          this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      }).catch(() => {})
     }
   }
 }
 </script>
-
+<style scoped>
+.my-page{
+  margin: -20px 0 -5px 0;
+}
+</style>

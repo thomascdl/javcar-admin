@@ -13,11 +13,11 @@
     <div class="title">
       <el-tooltip
         effect="dark"
-        :disabled="title.length < 6"
+        :disabled="title.length < textLength"
         :content="title"
         placement="bottom-end"
       >
-        <p>{{ title | ellipsis}}</p>
+        <p>{{ title | ellipsis(textLength) }}</p>
       </el-tooltip>
     </div>
   </div>
@@ -27,6 +27,10 @@
 export default {
   name: 'MyImg',
   props: {
+    textLength: {
+      type: Number,
+      default: 6
+    },
     imgStyle: {
       type: String,
       default: ''
@@ -53,10 +57,10 @@ export default {
   },
   // eslint-disable-next-line vue/order-in-components
   filters: {
-    ellipsis(value) {
+    ellipsis(value, payload) {
       if (!value) return ''
-      if (value.length > 5) {
-        return value.slice(0, 6) + '...'
+      if (value.length > payload - 1) {
+        return value.slice(0, payload) + '...'
       }
       return value
     }
