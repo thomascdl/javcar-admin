@@ -1,5 +1,22 @@
 <template>
   <div class="app-container">
+    <el-backtop
+      :bottom="100"
+      style="background-color: #67c23a;box-shadow: 0 0 10px rgba(0,0,0, .30);"
+    >
+      <div
+        style="{
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+      }"
+      >
+        UP
+      </div>
+    </el-backtop>
     <div class="filter-container">
       <el-input v-model="listQuery.fh" placeholder="Search" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.isReverse" style="width: 140px" class="filter-item" @change="handleFilter">
@@ -18,6 +35,14 @@
         批量操作
       </el-checkbox>
     </div>
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      class="my-page"
+      @pagination="getList"
+    />
     <el-table
       ref="tableData"
       :key="tableKey"
@@ -71,7 +96,13 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
     <el-dialog title="上传" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item ref="imgItem" label="大封面">
@@ -107,7 +138,7 @@
 <script>
 import { getbImg, uploadbImg, deletebImg } from '@/api/bimg'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
+// import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
@@ -322,3 +353,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.my-page{
+  margin: -20px 0 -5px 0;
+}
+</style>

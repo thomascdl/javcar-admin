@@ -1,5 +1,22 @@
 <template>
   <div class="app-container">
+    <el-backtop
+      :bottom="100"
+      style="background-color: #67c23a;box-shadow: 0 0 10px rgba(0,0,0, .30);"
+    >
+      <div
+        style="{
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        line-height: 40px;
+        color: white;
+      }"
+      >
+        UP
+      </div>
+    </el-backtop>
     <div class="filter-container">
       <el-input
         v-model="listQuery.name"
@@ -24,7 +41,6 @@
         Add
       </el-button>
     </div>
-
     <pagination
       v-show="total>0"
       :total="total"
@@ -33,7 +49,6 @@
       class="my-page"
       @pagination="getList"
     />
-
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -85,7 +100,6 @@
       </el-table-column>
 
     </el-table>
-
     <pagination
       v-show="total>0"
       :total="total"
@@ -93,7 +107,6 @@
       :limit.sync="listQuery.limit"
       @pagination="getList"
     />
-
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :before-close="handleClose">
       <el-form
         ref="dataForm"
