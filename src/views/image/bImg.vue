@@ -37,6 +37,7 @@
     </div>
     <pagination
       v-show="total>0"
+      :page-sizes="pageSizes"
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
@@ -85,6 +86,7 @@
             style="width: 200px; height: 135px"
             :src="row.url"
             :preview-src-list="toArray(row.url)"
+            @click.stop="handleClickItem($event)"
           />
         </template>
       </el-table-column>
@@ -98,6 +100,7 @@
     </el-table>
     <pagination
       v-show="total>0"
+      :page-sizes="pageSizes"
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
@@ -147,6 +150,7 @@ export default {
   directives: { waves },
   data() {
     return {
+      pageSizes: [10, 20, 30],
       showReviewer: false,
       fileList: [],
       tableKey: 0,
@@ -155,7 +159,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         isReverse: false,
         orderBy: 'id',
         fh: undefined
@@ -256,27 +260,6 @@ export default {
     handleCreate() {
       this.dialogFormVisible = true
     },
-    // handleDeleteNoWarning(row, index) {
-    //   deletebImg(row).then((res) => {
-    //     if (res.code !== 20000) {
-    //       this.$notify({
-    //         title: 'Fail',
-    //         message: 'Delete Fail',
-    //         type: 'warning',
-    //         duration: 5000
-    //       })
-    //     } else {
-    //       this.list.splice(index, 1)
-    //       this.total--
-    //       this.$notify({
-    //         title: 'Success',
-    //         message: 'Delete Successfully',
-    //         type: 'success',
-    //         duration: 3000
-    //       })
-    //     }
-    //   }).catch(() => {})
-    // },
     handleDelete(row, index) {
       this.$confirm(`确定移除 ${row.name} ？`).then(() => {
         deletebImg(row).then((res) => {
@@ -349,6 +332,20 @@ export default {
             this.getList()
           }
         }).catch(() => {})
+    },
+    handleClickItem(e) {
+      this.$nextTick(() => {
+        // 获取当前被点击的图片的遮罩层dom和关闭按钮dom
+        const domImageMask = e.currentTarget.nextElementSibling.firstElementChild
+        const domImageClose = e.currentTarget.nextElementSibling.querySelector('.el-image-viewer__close')
+        if (!domImageMask && !domImageClose) {
+          return
+        }
+        domImageMask.addEventListener('click', () => {
+          // 点击遮罩层时调用关闭按钮的 click 事件
+          domImageClose.click()
+        })
+      })
     }
   }
 }
