@@ -10,7 +10,18 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    canSelect: false
+    canSelect: false,
+    theme: 'chalk'
+  },
+  mutations: {
+    changeTheme(state) {
+      if (state.theme === 'chalk') {
+        // state.theme = 'vintage'
+        state.theme = 'westeros'
+      } else {
+        state.theme = 'chalk'
+      }
+    }
   },
   modules: {
     app,

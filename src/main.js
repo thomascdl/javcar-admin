@@ -21,6 +21,21 @@ import '@/permission' // permission control
 
 import * as filters from './filters' // global filters
 
+// import * as echarts from 'echarts'
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
+
+// 引入字体的文件
+import './assets/font/iconfont.css'
+// 引入全局的样式文件
+import './assets/css/global.less'
+// 引入主题
+import './assets/lib/theme/chalk'
+import './assets/lib/theme/westeros'
+
+import ElementResizeDetectorMaker from 'element-resize-detector'
+Vue.prototype.$erd = ElementResizeDetectorMaker()
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

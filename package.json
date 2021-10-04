@@ -15,7 +15,9 @@
     "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml"
   },
   "dependencies": {
-    "axios": "0.18.1",
+    "axios": "^0.21.4",
+    "echarts": "^4.8.0",
+    "element-resize-detector": "^1.2.3",
     "element-ui": "2.13.0",
     "file-saver": "^2.0.1",
     "fuse.js": "^6.0.0",
@@ -30,7 +32,7 @@
     "vue": "2.6.10",
     "vue-router": "3.0.6",
     "vuex": "3.1.0",
-    "xlsx": "^0.14.1"
+    "xlsx": "^0.17.2"
   },
   "devDependencies": {
     "@babel/core": "7.0.0",

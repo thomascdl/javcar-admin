@@ -28,6 +28,7 @@ import Layout from '@/layout'
 import videoRouter from './modules/video'
 import imageRouter from './modules/image'
 import actorRouter from './modules/actor'
+import displayRouter from './modules/display'
 
 /**
  * constantRoutes
@@ -77,6 +78,7 @@ export const asyncRoutes = [
   videoRouter,
   imageRouter,
   actorRouter,
+  displayRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

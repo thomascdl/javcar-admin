@@ -1,6 +1,7 @@
 <template>
   <div class="app-container">
     <el-backtop
+      target=".app-main"
       :bottom="100"
       style="background-color: #67c23a;box-shadow: 0 0 10px rgba(0,0,0, .30);"
     >
