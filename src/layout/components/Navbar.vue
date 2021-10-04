@@ -10,11 +10,9 @@
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
       </template>
-
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
-          <i class="el-icon-caret-bottom" />
+          <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar" alt="">
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
@@ -131,7 +129,7 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 15px;
 
       .avatar-wrapper {
         margin-top: 5px;

@@ -120,7 +120,7 @@ export default {
 }
 .data-div{
   width: 33%;
-  height: 40%;
+  height: 45%;
   text-align: center;
   display: flex;
   /*align-items: center;*/
@@ -130,13 +130,18 @@ export default {
 .number {
   width: 100%;
   height: 70%;
-  font-size: 50px;
-  //color: #ffeb7b;
+  align-items:center;
+  display: flex;
+  justify-content: center;
+  font-size: 55px;
   font-family: electronicFont, serif;
   font-weight: bold;
 }
 .text{
-  height: 30%;
+  //height: 30%;
+  align-items:center;
+  display: flex;
+  justify-content: center;
   font-size: 15px;
 }
 </style>

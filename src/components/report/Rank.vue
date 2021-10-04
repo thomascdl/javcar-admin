@@ -1,11 +1,13 @@
 <template>
-  <div class="com-container">
-    <div class="com-chart" ref="rankRef"></div>
+  <div ref="comContainer" class="com-container">
+    <div ref="rankRef" class="com-chart" />
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+// import { getThemeValue } from '@/utils/theme_utils'
+import { getActorRank } from '@/api/display'
 
 export default {
   name: 'Rank',
@@ -20,18 +22,14 @@ export default {
       // 柱形图结 区域缩放终点值
       endValue: 9,
       // 定时器
-      timerId: null,
+      timerId: null
     }
   },
-  created() {
-    this.$socket.registerCallBack('rankData', this.getData)
-  },
   computed: {
-    ...mapState(['theme']),
+    ...mapState(['theme'])
   },
   watch: {
     theme() {
-      console.log('主题切换了')
       // 销毁当前的图表
       this.chartInstance.dispose()
       // 以最新主题初始化图表对象
@@ -40,53 +38,60 @@ export default {
       this.screenAdapter()
       // 渲染数据
       this.updateChart()
-    },
+    }
   },
   mounted() {
     this.initChart()
-    // this.getData()
-    this.$socket.send({
-      action: 'getData',
-      socketType: 'rankData',
-      chartName: 'rank',
-      value: '',
-    })
-    window.addEventListener('resize', this.screenAdapter)
-    // 主动触发 响应式配置
+    this.getData()
+    // 在界面加载完成时，主动对屏幕进行适配
     this.screenAdapter()
+    // 监听容器大小变化
+    this.$erd.listenTo(this.$refs.comContainer, () => {
+      this.$nextTick(() => {
+        this.screenAdapter()
+      })
+    })
+  },
+  beforeDestroy() {
+    // 离开页面删除检测器和所有侦听器
+    this.$erd.uninstall(this.$refs.comContainer) // 这里用ref是因为vue离开页面后获取不到dom
   },
   destroyed() {
-    window.removeEventListener('resize', this.screenAdapter)
     clearInterval(this.timerId)
-    this.$socket.unRegisterCallBack('rankData')
   },
   methods: {
     // 初始化图表的方法
     initChart() {
       this.chartInstance = this.$echarts.init(this.$refs.rankRef, this.theme)
-
       const initOption = {
         title: {
-          text: '▎地区销售排行',
+          text: '▎演员影片量排行',
           left: 20,
-          top: 20,
+          top: 20
         },
         grid: {
-          top: '40%',
+          top: '25%',
           left: '5%',
-          right: '5%',
-          bottom: '5%',
+          right: '7%',
+          bottom: '8%',
           // 把x轴和y轴纳入 grid
-          containLabel: true,
+          containLabel: true
         },
         tooltip: {
-          show: true,
+          show: true
         },
         xAxis: {
           type: 'category',
+          axisLabel: {
+            textStyle: {
+              fontSize: 11
+            },
+            interval: 0,
+            rotate: -30
+          }
         },
         yAxis: {
-          value: 'value',
+          value: 'value'
         },
         series: [
           {
@@ -95,10 +100,10 @@ export default {
               show: true,
               position: 'top',
               color: 'white',
-              rotate: 30,
-            },
-          },
-        ],
+              rotate: 30
+            }
+          }
+        ]
       }
       this.chartInstance.setOption(initOption)
 
@@ -112,17 +117,17 @@ export default {
       })
     },
     // 发送请求，获取数据
-    async getData(res) {
-      // const { data: res } = await this.$http.get('/rank')
-      console.log('res: ', res)
-      this.allData = res
-      // 对数据进行排序(大到小)
-      this.allData.sort((a, b) => b.value - a.value)
-
-      console.log(this.allData)
-      this.updateChart()
-      // 开始自动切换
-      this.startInterval()
+    getData() {
+      getActorRank().then(res => {
+        this.allData = res.data
+        // 对数据进行排序(大到小)
+        this.allData.sort((a, b) => b.value - a.value)
+        this.updateChart()
+        // 开始自动切换
+        this.startInterval()
+      }).catch(e => {
+        console.log(e)
+      })
     },
     // 更新图表配置项
     updateChart() {
@@ -130,74 +135,65 @@ export default {
       const colorArr = [
         ['#0BA82C', '#4FF778'],
         ['#2E72BF', '#23E5E5'],
-        ['#5052EE', '#AB6EE5'],
+        ['#5052EE', '#AB6EE5']
       ]
-      // const colorArr = [
-      //   ['#b8e994', '#079992'],
-      //   ['#82ccdd', '#0a3d62'],
-      //   ['#f8c291', '#b71540'],
-      // ]
       // 所有省份组成的数组
       const provinceInfo = this.allData.map(item => item.name)
       // 所有省份对应的销售金额
       const valueArr = this.allData.map(item => item.value)
-
       const dataOption = {
         xAxis: {
-          data: provinceInfo,
+          data: provinceInfo
         },
         dataZoom: {
           // 区域缩放组件
           show: false,
           startValue: this.startValue,
-          endValue: this.endValue,
+          endValue: this.endValue
         },
         series: [
           {
             data: valueArr,
             itemStyle: {
               color: arg => {
-                let targetColorArr = null
-
-                if (arg.value > 300) {
+                let targetColorArr
+                if (arg.value > 8) {
                   targetColorArr = colorArr[0]
-                } else if (arg.value > 200) {
+                } else if (arg.value > 6) {
                   targetColorArr = colorArr[1]
                 } else {
                   targetColorArr = colorArr[2]
                 }
-
                 return new this.$echarts.graphic.LinearGradient(0, 0, 0, 1, [
                   // 0%
                   { offset: 0, color: targetColorArr[0] },
                   // 100%
-                  { offset: 1, color: targetColorArr[1] },
+                  { offset: 1, color: targetColorArr[1] }
                 ])
-              },
-            },
-          },
-        ],
+              }
+            }
+          }
+        ]
       }
       this.chartInstance.setOption(dataOption)
     },
     // 根据图标容器的宽度 计算各属性、标签、元素的大小
     screenAdapter() {
-      const titleFontSzie = (this.$refs.rankRef.offsetWidth / 100) * 3.6
-
+      const titleFontSize = (this.$refs.rankRef.offsetWidth / 100) * 3.6
       const adapterOption = {
         title: {
           textStyle: {
-            fontSize: titleFontSzie,
-          },
+            fontSize: titleFontSize
+          }
         },
         series: [
           {
-            barWidth: titleFontSzie,
+            barWidth: titleFontSize,
             itemStyle: {
-              barBorderRadius: [titleFontSzie / 2, titleFontSzie / 2, 0, 0],
-            },
-          },
-        ],
+              barBorderRadius: [titleFontSize / 2, titleFontSize / 2, 0, 0]
+            }
+          }
+        ]
       }
       this.chartInstance.setOption(adapterOption)
       this.chartInstance.resize()
@@ -206,7 +202,6 @@ export default {
     startInterval() {
       // 如果存在则关闭
       this.timerId && clearInterval(this.timerId)
-
       this.timerId = setInterval(() => {
         this.startValue++
         this.endValue++
@@ -216,8 +211,8 @@ export default {
         }
         this.updateChart()
       }, 2000)
-    },
-  },
+    }
+  }
 }
 </script>
 

@@ -7,6 +7,13 @@ export function getVideoRank() {
   })
 }
 
+export function getActorRank() {
+  return request({
+    url: '/back/actorrank/',
+    method: 'get'
+  })
+}
+
 export function getPanel() {
   return request({
     url: '/back/panel/',

@@ -36,7 +36,7 @@
         </div>
         <div id="middle-bottom" :class="{ fullscreen: fullScreenStatus.rank }">
           <!-- 地区销量排行图表 -->
-          <!--          <rank ref="rank"></rank>-->
+          <rank ref="rank"/>
           <div class="resize">
             <span :class="['iconfont', fullScreenStatus.rank ? 'icon-compress-alt' : 'icon-expand-alt']" @click="changeSize('rank')" />
           </div>
@@ -69,12 +69,14 @@ import { getThemeValue } from '@/utils/theme_utils'
 
 import VideoRank from '@/components/report/VideoRank'
 import Panel from '@/components/report/Panel'
+import Rank from '@/components/report/Rank'
 
 export default {
   name: 'DataShow',
   components: {
     VideoRank,
-    Panel
+    Panel,
+    Rank
   },
   data() {
     return {
@@ -232,13 +234,13 @@ export default {
   margin-right: 1.6%;
 #middle-top {
   width: 100%;
-  height: 56%;
+  height: 45%;
   position: relative;
 }
 #middle-bottom {
-  margin-top: 25px;
+  margin-top: 20px;
   width: 100%;
-  height: 28%;
+  height: 50%;
   position: relative;
 }
 }
